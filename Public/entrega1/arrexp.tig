@@ -1,0 +1,5 @@
+let 
+	var x := A[123] of 123
+in 
+	x
+end

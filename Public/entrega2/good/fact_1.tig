@@ -1,0 +1,17 @@
+/* define a recursive function */
+let
+
+  var x := 25
+   
+  function fact1 (n : int) = 
+	x := fact (1111111, 2222222, n, 3333333)
+
+  /* calculate n! */
+  function fact (a :int, c: int, n : int, b:int) : int =
+    if  n = 0
+      then 1
+      else n * fact (a, c, n - 1, b)
+
+in
+  (x := 15; fact1(10) )
+end

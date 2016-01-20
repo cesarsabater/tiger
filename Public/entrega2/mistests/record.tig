@@ -1,0 +1,28 @@
+let  
+	type I = int
+	type AI = array of int
+	type MULTI = { l1 :int, l2: int , l3:int, l4:string, l5:int, l6:string, l7:string, l8:AI }
+	type LL = {lab:int , n:LL}
+	var ll : LL := LL { n=nil, lab=14} 
+	var mr := MULTI {l1=1111, l2=2222,l5=5555,l3=3333,l4="holamundoasd000", l6="chaumundo", l7="holaquetal", l8= AI[10] of 272727}
+	/* 
+	function makeLL(n:int) : LL = 
+	let
+		var ini : LL := LL { lab=0, n=nil }
+		var last : LL := ini
+	in	(
+		for i := 1 to n-1 do (
+			last.n := LL { lab=i, n=nil } ;
+			last := last.n 
+		); 
+		ini 
+	) end */
+	
+in 
+	let 
+		var x := 22
+	in
+	/* ll := makeLL(10) */ 
+	x := mr.l8[1]
+	end
+end

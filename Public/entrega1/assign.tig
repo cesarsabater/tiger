@@ -1,0 +1,6 @@
+for i := 1 to 10 do 
+	let
+		var x := i
+	in 
+		(i := 3; () ) 
+	end 

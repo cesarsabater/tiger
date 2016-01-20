@@ -1,0 +1,17 @@
+let
+	type A = array of int
+	type M = array of A
+	type M3 = array of M
+	type M4 = array of M3
+	function makeA(n:int) : A =
+	let
+		var a := A[n] of 0
+	in (
+		for i := 1 to n-1 do 
+			a[i] := i  ;
+		a ) 
+	end
+	var a := makeA(10)
+in
+	a
+end

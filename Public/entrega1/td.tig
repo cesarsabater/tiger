@@ -1,0 +1,22 @@
+let	
+	type AR = array of rec
+	type rec = { a : int, b : string, r : rec }
+	type recc = { b:string, r: rec}
+	type arecc = array of recc
+	type rec3 = { r2 : arecc}
+	type LL = { n: LL }
+	type A = int
+	type B = A
+	type C = B
+	type D = string
+	type Rec2 = rec
+	var x : A := 1
+	var y : C := 1
+	var s : D := "sadf"
+	var r1 := rec { a=1, b="hola", r=nil} 
+	var ll := LL {n= LL{n=LL{n=nil}}}
+	var rcc2 := recc { b= "hola", r=nil}
+	var rcc := recc { b="hola mundo", r= rec { a=13, b="chau mundo", r= rec { a=1, b="asd", r=nil }} } 
+in 
+	(r1.r.r.r.b = rcc.r.r.r.r.r.r.r.r.r.b)
+end

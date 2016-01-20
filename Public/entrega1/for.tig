@@ -1,0 +1,7 @@
+for i := 1 to 2 do 
+let 
+	var x := i 
+in 
+	i := x
+end
+

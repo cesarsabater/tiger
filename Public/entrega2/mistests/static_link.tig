@@ -1,0 +1,47 @@
+let
+	var x : int := 1
+	var y : int := 222
+	var z : int := 15
+	
+	function a(p:int) = 
+	let function b(p:int) =
+		let function a(p:int) = 
+			
+			let 
+				var l := -22
+				function b(p:int) = 
+					(x := p + l; g(p - l))
+			in b(p) end
+		in a(p) end
+	in b(p) end
+		
+	
+	function g(z:int) = 
+	let
+		function h(w:int) =  (x := 2; y := 555; g(w)) 
+	in
+		((y := z); if (y = 666) then () else h(666))
+	end
+	
+	function c(x:int) = d(x)
+	function d(z:int) = 
+	let
+		function e(x:int) = f(x)
+		function f(y:int) = (x := y)
+	in 
+		e(z)
+	end
+	
+	function k(x: int):int = 
+	let
+		function i(y: int):int = y+1
+	in
+		let
+			function j(y: int):int = y-x
+		in
+			i(x) - j(i(x))
+		end
+	end
+in
+	k(65)
+end

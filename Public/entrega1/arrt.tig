@@ -1,0 +1,16 @@
+let 	
+	type R3 = {r : R3}
+	type C = array of R2
+	type R2 = { c : C }
+	type R = {a: A, b: B}
+	type B = array of int
+	type A = array of B
+	var a : A := A[20] of B[10] of 2
+	var c := B[3] of (a[1][3] + a[2][3])
+	var b := 1
+	var r := R {a=(A[10] of (B[3] of b)), b=(B[3] of 3)}
+	var r2 := R2 { c= C[20] of R2 {c=C[10] of nil } }
+	var r3 := R3 { r= nil }
+in 
+	r2.c[2].c[4] = r2.c[20]
+end

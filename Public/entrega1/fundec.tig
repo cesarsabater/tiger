@@ -1,0 +1,15 @@
+let
+	type R = { a: int , c: string, b: R}
+	function f (x : int , y : int, z : string) =  ()
+	function g (x : int ): int = (h ( g(1), R {a=1, c="hola", b=nil}); 1 )
+	function h (x : int, y: R ) : R =  R { a=1 , c="hola", b=nil}	
+    function i () = 
+        for j := 1 to 10 do 
+            let 
+                function f (): int = j + 1
+            in 
+                ( f(); ())
+            end
+in 
+	h ("hola", nil)
+end

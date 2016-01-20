@@ -1,0 +1,5 @@
+let
+	function f (i:int) = i
+in 
+	f("hola")
+end

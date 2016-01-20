@@ -1,0 +1,10 @@
+let
+	type I = string
+	var a := (let 
+				type I = array of int
+				type A = { i:I}
+			  in I[10] of 2727227 end )
+	var b : I := "hola"
+in
+	a
+end

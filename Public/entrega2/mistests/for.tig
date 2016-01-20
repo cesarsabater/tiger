@@ -1,0 +1,43 @@
+let
+	type ARR = array of int
+	type LL = {val:int, next:LL}
+	
+	function makeLL(n:int) : LL =
+	let
+		var ll := LL {val=1, next=nil}
+		var it := ll
+	in (
+		for i := 2 to n do (
+			it.next := LL {val=i, next=nil} ;
+			it := it.next 
+		) ; 
+		ll
+	) 
+	end
+	
+	function LLtoARR(arr:ARR, ll:LL) = 
+	let
+		var it := 0
+	in
+		while ll.next <> nil do (
+			arr[it] := ll.val ;
+			it := it + 1 ;
+			ll := ll.next
+		)
+	end
+	
+	var size := 20
+	var ll : LL := nil
+	var arr := ARR[size] of 0
+	
+	function breakTest() = 
+		while (1; break) do 
+			let 
+				function f() = ()
+			in
+				(f(); break; ())
+			end
+		
+in 
+	breakTest()
+end

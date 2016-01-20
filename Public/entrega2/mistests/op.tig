@@ -1,0 +1,10 @@
+let
+	var i := 10
+	var s := "hola" 
+	var s2 := "holaq"
+	var s3 := "hola"
+	var s4 := "zzzzz"
+	var cmp := (s >= s4)
+in 
+	cmp
+end
