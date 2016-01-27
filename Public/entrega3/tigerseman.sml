@@ -585,7 +585,7 @@ fun transProg ex =
 (*
 			val _ = tigerinterp.inter false (getCanonFmts res) (getStrings res)
 *)
-			val _ = tigerinterp.inter true (getCanonFmts res) (getStrings res)
+			val _ = tigerinterp.inter false (getCanonFmts res) (getStrings res)
 			
 	in	
 			( print "bien!\n") 
