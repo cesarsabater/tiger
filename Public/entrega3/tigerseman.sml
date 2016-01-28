@@ -6,6 +6,8 @@ open tigersres
 open tigertrans
 open tigercanon
 open topsort
+open tigercodegen
+
 (* sacar esto *)
 
 type expty = {exp: unit, ty: Tipo}
@@ -568,25 +570,38 @@ fun transProg ex =
 				in 
 						printFmts(fmts)
 				end
-	
 
-		
-		val main =
-				LetExp({decs=[FunctionDec[({name="_tigermain", params=[],
-								result=NONE, body=ex}, 0)]],
-						body=UnitExp 0}, 0)
-			val _ = transExp(tab_vars, tab_tipos) main
-			val res = getResult()
-			
+    
+    
+
+    fun geninstr [] = []
+    |   geninstr ((stl,frame)::l) = (geninstr1 frame stl)^(geninstr l)
+    
+    
+    val main =
+        LetExp({decs=[FunctionDec[({name="_tigermain", params=[],
+                        result=NONE, body=ex}, 0)]],
+                body=UnitExp 0}, 0)
+    (* generamos codigo intermedio *)
+    val _ = transExp(tab_vars, tab_tipos) main
+    
+    val res = getResult()
+
+    val canonfmts = getCanonFmts res
+        
 (*
-			val _ = print(Ir(res))
+    val _ = print(Ir(res))
 *)
-			val _ = printFmts(getResult())		
+    val _ = printFmts(getResult())		
 (*
-			val _ = tigerinterp.inter false (getCanonFmts res) (getStrings res)
+    val _ = tigerinterp.inter false canonfmts (getStrings res)
 *)
-			val _ = tigerinterp.inter false (getCanonFmts res) (getStrings res)
-			
+(*
+    val _ = tigerinterp.inter false canonfmts (getStrings res)
+*)
+    
+    val _ = geninstr canonfmts
+    
 	in	
 			( print "bien!\n") 
 	end
