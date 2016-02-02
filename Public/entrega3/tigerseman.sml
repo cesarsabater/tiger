@@ -572,10 +572,12 @@ fun transProg ex =
 				end
 
     
+    fun geninstr1 _ [] = []
+    |   geninstr1 frame (st::stl) = (codegen frame st)@(geninstr1 frame stl) 
     
 
     fun geninstr [] = []
-    |   geninstr ((stl,frame)::l) = (geninstr1 frame stl)^(geninstr l)
+    |   geninstr ((stl,frame)::l) = (geninstr1 frame stl)@(geninstr l)
     
     
     val main =
