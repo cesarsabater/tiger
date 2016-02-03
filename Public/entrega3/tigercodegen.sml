@@ -35,7 +35,7 @@ let
 	                             | NE => "BNE"
 	                           
 	    in emit (OPER {assem = "CMP s0, s1\n" ^ instr ^ lab1,
-	                   src = [muchExp e1, munchExp e2], dst = [],
+	                   src = [munchExp e1, munchExp e2], dst = [],
 	                   jump = [lab1,lab2] })
 	                   
 	    end               
