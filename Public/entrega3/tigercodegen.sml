@@ -36,7 +36,7 @@ let
 	                           
 	    in emit (OPER {assem = "CMP s0, s1\n" ^ instr ^ lab1,
 	                   src = [munchExp e1, munchExp e2], dst = [],
-	                   jump = [lab1,lab2] })
+	                   jump = SOME [lab1,lab2] })
 	                   
 	    end               
 	  
@@ -44,13 +44,13 @@ let
 	  | munchStm (JUMP (NAME (lab), _)) =
 	    emit (OPER {assem = "b lab\n",
 	                src = [], dst = [],
-	                jump = [lab] })
+	                jump = SOME [lab] })
 	  
 	  
 	  | munchStm (JUMP ( e1 , labels) ) =
 	    emit (OPER {assem = "bx s0\n",
 	                src = [munchExp e1], dst = [],
-	                jump = labels })
+	                jump = SOME labels })
 	     
 	  
 	  
@@ -115,7 +115,7 @@ let
 	             jump = NONE }))            
 	             
 	  | munchExp (CONST i) =
-	      let val i32 = if (i < 65536) then "32" else ""
+	      let val i32 = if (i >= 65536) then "32" else ""
 	      in 
 	         result(fn r => emit(OPER
 	            {assem = "MOV" ^ i32 ^ " d0, #" ^ Int.toString i ^ "\n",
