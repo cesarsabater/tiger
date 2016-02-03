@@ -42,7 +42,7 @@ let
 	  
 
 	  | munchStm (JUMP (NAME (lab), _)) =
-	    emit (OPER {assem = "b lab\n",
+	    emit (OPER {assem = "b "^lab^"\n",
 	                src = [], dst = [],
 	                jump = SOME [lab] })
 	  

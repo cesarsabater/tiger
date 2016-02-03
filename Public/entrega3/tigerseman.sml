@@ -532,82 +532,68 @@ fun transExp(venv, tenv) =
                     printList xs
                 end
 	in trexp end
+    
 fun transProg ex =
 	let
-	
-	(***** DEBUG *******)
-	fun canonize x = traceSchedule (basicBlocks (linearize x)) 
+        (* canonizacion *)
+        fun canonize x = traceSchedule (basicBlocks (linearize x)) 
+        (* manipulacion de fragmentos *)
+        fun getStrings [] = []
+            | getStrings ((tigerframe.STRING(l,s))::fmts) = (l,s)::(getStrings fmts)
+            | getStrings (_::fmts) = getStrings fmts
 
+        fun getCanonFmts [] = []
+            | getCanonFmts ((tigerframe.PROC {body, frame})::fmts) = (canonize body, frame)::(getCanonFmts fmts)
+            | getCanonFmts (_::fmts) = getCanonFmts fmts 
 
-	
-	fun getStrings [] = []
-		| getStrings ((tigerframe.STRING(l,s))::fmts) = (l,s)::(getStrings fmts)
-		| getStrings (_::fmts) = getStrings fmts
+        fun printIR [] = [] 
+               | printIR ((tigerframe.PROC {body=b, frame=f})::fmts) =
+                    let
+                        val _ = print ("\nFragment \""^(tigerframe.name f)^"\":\n")
+                        val _ = map (fn st => print (tigerit.tree st)) (canonize b)
+                    in	
+                        printIR(fmts) 
+                    end
+               | printIR (s::fmts) = 
+                    let 
+                        val _ = print("\nString Fragment:\n")
+                        val _ = print(Ir([s]))
+                    in 
+                            printIR(fmts)
+                    end
 
-	fun getCanonFmts [] = []
-		| getCanonFmts ((tigerframe.PROC {body, frame})::fmts) = (canonize body, frame)::(getCanonFmts fmts)
-		| getCanonFmts (_::fmts) = getCanonFmts fmts 
-
-	fun printFmts [] = [] 
-		   | printFmts ((tigerframe.PROC {body=b, frame=f})::fmts) =
-				let
-					val _ = print ("--------------- FRAGMENT "^(tigerframe.name f)^"--------------\n")
-					val _ = map (fn st => ( (*print ((tigerframe.name f)^"\n"), *)
-											print (tigerit.tree st), 
-											print ("-----------------\n")) ) 
-(*
-									(linearize b)
-*)
-									(canonize b)  
-					(* val _ = print("-----------\n---------;;\n") *)
-				in	
-					printFmts(fmts) 
-				end
-		   | printFmts (s::fmts) = 
-				let 
-					val _ = print("------ STRINGFRAGMENT ----\n")
-					val _ = print(Ir([s]))
-					(* val _ = print("---------\n----------;;\n") *)
-				in 
-						printFmts(fmts)
-				end
-
-    (* generacion de instrucciones *)
-    fun geninstr1 _ [] = []
-    |   geninstr1 frame (st::stl) = (codegen frame st)@(geninstr1 frame stl) 
-    
-    fun geninstr [] = []
-    |   geninstr ((stl,frame)::l) = (geninstr1 frame stl)@(geninstr l)
-    
-    val instr2string = format (fn t => "t")
-    
-    fun code2string [] = ""
-    |   code2string (instr::l) = (instr2string instr)^(code2string l)
-    
-    val main =
-        LetExp({decs=[FunctionDec[({name="_tigermain", params=[],
-                        result=NONE, body=ex}, 0)]],
-                body=UnitExp 0}, 0)
-    (* generamos codigo intermedio *)
-    val _ = transExp(tab_vars, tab_tipos) main
-    
-    val res = getResult()
-
-    val canonfmts = getCanonFmts res
+        (* generacion de instrucciones *)
+        fun geninstr1 _ [] = []
+        |   geninstr1 frame (st::stl) = (codegen frame st)@(geninstr1 frame stl) 
         
+        fun geninstr [] = []
+        |   geninstr ((stl,frame)::l) = (geninstr1 frame stl)@(geninstr l)
         
-(*
-    val _ = print(Ir(res))
-*)
-    val _ = printFmts(getResult())		
-(*
-    val _ = tigerinterp.inter false canonfmts (getStrings res)
-*)
-(*
-    val _ = tigerinterp.inter false canonfmts (getStrings res)
-*)
-    
-    val _ = print (code2string (geninstr canonfmts))
+        val instr2string = format (fn t => "t")
+        
+        fun code2string [] = ""
+        |   code2string (instr::l) = (instr2string instr)^(code2string l)
+        fun printCode fmts =
+            ( print "\nCodigo:\n", 
+              print (code2string (geninstr fmts)),
+              print "\n"
+            )
+            
+        (* main *)
+        val main =
+            LetExp({decs=[FunctionDec[({name="_tigermain", params=[],
+                            result=NONE, body=ex}, 0)]],
+                    body=UnitExp 0}, 0)
+        (* generamos codigo intermedio *)
+        val _ = transExp(tab_vars, tab_tipos) main
+        
+        (* obtenemos e imprimimos resultados *)
+        val res = getResult()
+        val canonfmts = getCanonFmts res
+        (* val _ = print(Ir(res)) *)
+        val _ = printIR(getResult())		
+        (* val _ = tigerinterp.inter false canonfmts (getStrings res) *)
+        val _ = printCode canonfmts
     
 	in	
 			( print "bien!\n") 
