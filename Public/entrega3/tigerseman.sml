@@ -582,7 +582,7 @@ fun transProg ex =
     val instr2string = format (fn t => "t")
     
     fun code2string [] = ""
-    |   code2string (instr::l) = (instr2string instr)^"\n"^(code2string l)
+    |   code2string (instr::l) = (instr2string instr)^(code2string l)
     
     val main =
         LetExp({decs=[FunctionDec[({name="_tigermain", params=[],
