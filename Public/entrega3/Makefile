@@ -80,12 +80,12 @@ tigerit.uo: tigertree.uo tigertab.ui
 tigersimpleregalloc.uo: tigersimpleregalloc.ui tigerassem.ui 
 tigerseman.uo: tigerseman.ui tigercodegen.ui tigersres.uo tigertab.ui \
     tigerpila.ui topsort.uo tigerframe.ui tigerit.uo tigercanon.ui \
-    tigertemp.ui tigerabs.uo tigertrans.ui 
+    tigerassem.ui tigertemp.ui tigerabs.uo tigertrans.ui 
 tigerassem.ui: tigertemp.ui 
 tigersres.uo: tigertab.ui tigertips.uo tigertemp.ui tigerabs.uo \
     tigertrans.ui 
 tigertree.uo: tigertemp.ui 
-tigerassem.uo: tigerassem.ui tigerassem.ui 
+tigerassem.uo: tigerassem.ui tigertemp.ui 
 tigerframe.uo: tigerframe.ui tigertree.uo tigertemp.ui 
 tigercanon.uo: tigercanon.ui tigertree.uo tigertab.ui tigertemp.ui 
 tigercanon.ui: tigertree.uo tigertemp.ui 

@@ -7,6 +7,7 @@ open tigertrans
 open tigercanon
 open topsort
 open tigercodegen
+open tigerassem
 
 (* sacar esto *)
 
@@ -571,14 +572,17 @@ fun transProg ex =
 						printFmts(fmts)
 				end
 
-    
+    (* generacion de instrucciones *)
     fun geninstr1 _ [] = []
     |   geninstr1 frame (st::stl) = (codegen frame st)@(geninstr1 frame stl) 
     
-
     fun geninstr [] = []
     |   geninstr ((stl,frame)::l) = (geninstr1 frame stl)@(geninstr l)
     
+    val instr2string = format (fn t => "t")
+    
+    fun code2string [] = ""
+    |   code2string (instr::l) = (instr2string instr)^"\n"^(code2string l)
     
     val main =
         LetExp({decs=[FunctionDec[({name="_tigermain", params=[],
@@ -591,6 +595,7 @@ fun transProg ex =
 
     val canonfmts = getCanonFmts res
         
+        
 (*
     val _ = print(Ir(res))
 *)
@@ -602,7 +607,7 @@ fun transProg ex =
     val _ = tigerinterp.inter false canonfmts (getStrings res)
 *)
     
-    val _ = geninstr canonfmts
+    val _ = print (code2string (geninstr canonfmts))
     
 	in	
 			( print "bien!\n") 
