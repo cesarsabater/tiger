@@ -26,7 +26,37 @@ let
 	
 	fun munchStm (SEQ(a,b)) = (munchStm a ; munchStm b)
 	  
+	  | munchStm (CJUMP (relop,e1,e2,lab1,lab2)) =
+	    
+	    let instr  = case relop of EQ => "BEQ"
+	                             | GT => "BGT"
+	                             | LT => "BLT"
+	                             | GE => "BGE"
+	                             | LE => "BLE"
+	                             | NE => "BNE"
+	                           
+	    in emit (OPER {assem = "CMP s0, s1\n" ^ instr ^ lab1,
+	                   src = [muchExp e1, munchExp e2], dst = [],
+	                   jump = [lab1,lab2] })
+	                   
+	    end               
 	  
+	  
+	  | munchStm (JUMP (NAME (lab), _)) =
+	    emit (OPER {assem = "b lab\n",
+	                src = [], dst = [],
+	                jump = [lab] })
+	  
+	  
+	  | munchStm (JUMP ( e1 , labels) ) =
+	    emit (OPER {assem = "bx s0\n",
+	                src = [munchExp e1], dst = [],
+	                jump = labels })
+	     
+	  
+	  
+
+	    
 	  | munchStm (EXP(CALL (NAME lf,args))) =
         emit (OPER {assem = "bl s0\n",
                     src = munchArgs(0,args),
@@ -64,7 +94,7 @@ let
 	and result gen = let val t = tigertemp.newtemp() in gen t; t end
 	
 	
-	and munchExp (MEM (BINOP (PLUS, CONST i, e1)))
+	and munchExp (MEM (BINOP (PLUS, CONST i, e1))) =
 	      
 	      result(fn r => emit(OPER
 	            {assem = "LDR d0,[s0,#" ^ int i ^ "]\n",
