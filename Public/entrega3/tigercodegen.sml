@@ -34,7 +34,7 @@ let
 	                             | LE => "BLE"
 	                             | NE => "BNE"
 	                           
-	    in emit (OPER {assem = "CMP s0, s1\n" ^ instr ^ lab1,
+	    in emit (OPER {assem = "CMP's0, 's1\n" ^ instr ^ lab1,
 	                   src = [munchExp e1, munchExp e2], dst = [],
 	                   jump = SOME [lab1,lab2] })
 	                   
@@ -48,23 +48,27 @@ let
 	  
 	  
 	  | munchStm (JUMP ( e1 , labels) ) =
-	    emit (OPER {assem = "bx s0\n",
+	    emit (OPER {assem = "bx 's0\n",
 	                src = [munchExp e1], dst = [],
 	                jump = SOME labels })
 	     
 	  
 	  
 
-   (* | munchStm (EXP(CALL (NAME lf,args))) =
-        emit (OPER {(ssem = "bl s0\n",
-
-                    src = munchArgs(0,args),
+     | munchStm (EXP(CALL (NAME lf,args))) =
+       let val argtemps = munchArgs(0,args) 
+           fun genPush [] = () 
+             | genPush (h::t) = (emit(OPER{assem = "PUSH {'s0}\n", src=[h] , dst=[], jump=NONE}) ; (genPush t)) 
+       in
+        genPush argtemps ;
+        emit (OPER {assem = "bl " ^ lf ^ "\n",
+					src =  argtemps,
                     dst = calldefs,
-                    jump = lf})   *)(* O jump = NONE ?*)	  
-	    
+                    jump = NONE})   (* O jump = lf ?*)	  
+	    end
     
 	  | munchStm (MOVE(TEMP t1, e2)) = 
-	     emit(OPER {assem= "mov 'd0,s0\n",
+	     emit(OPER {assem= "mov 'd0,'s0\n",
 	                src = [munchExp e2],
 	                dst = [t1],
 	                jump = NONE })
@@ -89,7 +93,7 @@ let
 	and munchExp (MEM (BINOP (PLUS, CONST i, e1))) = 
 	      
 	     result(fn r => emit(OPER
-	            {assem = "LDR d0,[s0,#" ^ Int.toString i ^ "]\n",
+	            {assem = "LDR 'd0,['s0,#" ^ Int.toString i ^ "]\n",
 	             src = [munchExp e1], dst = [r],
 	             jump = NONE }))
 	  
@@ -97,20 +101,20 @@ let
 	  | munchExp (BINOP(PLUS,e1,e2)) = 
 	         
 	      result(fn r => emit(OPER 
-	            {assem = "ADD d0, s0, s1\n",
+	            {assem = "ADD 'd0, 's0, 's1\n",
 	             src = [munchExp e1, munchExp e2], dst = [r],
 	             jump = NONE }))
 	  
 	  | munchExp (BINOP(MINUS,e1,e2)) = 
 	      result(fn r => emit(OPER 
-	            {assem = "SUB d0, s0, s1\n",
+	            {assem = "SUB 'd0, 's0,'s1\n",
 	             src = [munchExp e1, munchExp e2], dst = [r],
 	             jump = NONE }))              	             
 	             
 	  | munchExp (MEM e1) =
 	      
 	      result(fn r => emit(OPER
-	            {assem = "LDR d0, [s0]\n",
+	            {assem = "LDR 'd0, ['s0]\n",
 	             src = [munchExp e1], dst = [r],
 	             jump = NONE }))            
 	             
@@ -118,7 +122,7 @@ let
 	      let val i32 = if (i >= 65536) then "32" else ""
 	      in 
 	         result(fn r => emit(OPER
-	            {assem = "MOV" ^ i32 ^ " d0, #" ^ Int.toString i ^ "\n",
+	            {assem = "MOV" ^ i32 ^ " 'd0, #" ^ Int.toString i ^ "\n",
 	             src = [] , dst = [r],
 	             jump = NONE }))
 	      end                
@@ -126,13 +130,19 @@ let
 	  
 	  | munchExp (NAME lab) =
 	      result (fn r => emit(OPER
-	            {assem = "LDR ^ d0, =" ^ lab ^ "\n",
+	            {assem = "LDR ^ 'd0, =" ^ lab ^ "\n",
 	             src = [], dst = [r],
 	             jump = NONE }))
 	  
 	  | munchExp (TEMP t) = t         
 	             
       | munchExp _ = tigertemp.newtemp()
+	
+	
+	and munchArgs ( _ , []) = []
+	 |  munchArgs (n, h::t) = (munchExp h) :: munchArgs(n+1,t)   
+	   
+	 (*  emit(OPER{assem = "PUSH {'s0}\n", src=[munchExp h] , dst=[], jump=NONE}) ; munchArgs(n+1,t) *)
 	
 	
 	(* fun munchExp( *) 
