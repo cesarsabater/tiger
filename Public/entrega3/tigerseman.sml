@@ -569,7 +569,7 @@ let
     fun geninstr [] = []
     |   geninstr ((stl,frame)::l) = (geninstr1 frame stl)@(geninstr l)
     
-    val instr2string = format (fn t => "t")
+    val instr2string = format (fn t => t)
     
     fun code2string [] = ""
     |   code2string (instr::l) = (instr2string instr)^(code2string l)

@@ -6,7 +6,7 @@ HOME=~
 #MOSMLLEX=mosmllex
 #MOSMLYACC=mosmlyac -v
 
-MOSMLHOME=/home/javier/mosml
+MOSMLHOME=/home/cuca/mosml
 MOSMLTOOLS=${MOSMLHOME}/bin/camlrunm $(MOSMLHOME)/tools
 MOSMLLEX=${MOSMLHOME}/bin/mosmllex
 MOSMLYACC=${MOSMLHOME}/bin/mosmlyac -v
