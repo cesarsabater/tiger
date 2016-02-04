@@ -42,7 +42,7 @@ let
 	  
 
 	  | munchStm (JUMP (NAME (lab), _)) =
-	    emit (OPER {assem = "b lab\n",
+	    emit (OPER {assem = "b "^lab^"\n",
 	                src = [], dst = [],
 	                jump = SOME [lab] })
 	  
@@ -119,7 +119,7 @@ let
 	             jump = NONE }))            
 	             
 	  | munchExp (CONST i) =
-	      let val i32 = if (i < 65536) then "32" else ""
+	      let val i32 = if (i >= 65536) then "32" else ""
 	      in 
 	         result(fn r => emit(OPER
 	            {assem = "MOV" ^ i32 ^ " 'd0, #" ^ Int.toString i ^ "\n",
