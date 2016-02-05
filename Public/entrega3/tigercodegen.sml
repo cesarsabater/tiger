@@ -72,6 +72,26 @@ let
 	                src = [munchExp e2],
 	                dst = [t1],
 	                jump = NONE })
+	  | munchStm (MOVE(MEM e1, BINOP(PLUS, CONST i, TEMP sp) )) =  (* i mult de 4 entre 0 y 1020*)
+	     emit(OPER {assem= "str 's0, [sp,#" ^ Int.toString i ^ "]\n",
+	                src = [munchExp e1,sp], 
+	                dst = [],
+	                jump = NONE })
+	  
+	  | munchStm (MOVE(MEM e1, BINOP(PLUS, CONST i, e2))) =
+	     emit(OPER {assem="str 's0, ['s1, #" ^ Int.toString i ^ "]\n",
+	                src = [munchExp e1,munchExp e2],
+	                dst = [],
+	                jump= NONE })                
+	                              
+	                 
+	  | munchStm (MOVE(MEM e1, BINOP(PLUS, e2, e3))) =
+	     emit(OPER {assem="str 's0, ['s1, 's2]\n",
+	                src = [munchExp e1,munchExp e2,munchExp e3],
+	                dst = [],
+	                jump= NONE })  
+	    
+	                 
 	                 
 	  | munchStm (MOVE(MEM e1, e2)) =
 	     emit(OPER {assem= "str 's1,['s0]\n",
