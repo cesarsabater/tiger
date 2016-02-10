@@ -471,5 +471,23 @@ in
 	  | _ => raise Fail "Esto no deberia pasar (8)" 
 end (*  Ex (CONST 0)  *) (*COMPLETAR*)
 
+fun  cfexp (MEM e) = MEM (cfexp e)
+   | cfexp (CALL (e, l)) = CALL (cfexp e, (map cfexp l))
+   | cfexp (ESEQ (st,ex)) = ESEQ (cfstm st, cfexp ex)
+   | cfexp (BINOP (PLUS, CONST c1, CONST c2)) = CONST (c1+c2)
+   | cfexp (BINOP (PLUS, CONST c1, BINOP (PLUS, CONST c2, t))) = BINOP (PLUS, CONST (c1+c2), cfexp t)
+   | cfexp (BINOP (PLUS, t, CONST c)) = BINOP (PLUS, CONST c, cfexp t)
+   | cfexp (BINOP (MUL, CONST c1, CONST c2)) = CONST (c1*c2)
+   | cfexp (BINOP (MUL, (BINOP (PLUS, CONST c1, t)), CONST c2)) = 
+		BINOP (PLUS, CONST (c1*c2), (BINOP (MUL, CONST c2, t)))
+   | cfexp e = e
+
+and cfstm (MOVE (e1,e2)) = (MOVE (cfexp e1, cfexp e2)) 
+		| cfstm (EXP e) = (EXP (cfexp e))
+		| cfstm (JUMP (e, l)) = JUMP ((cfexp e), l)
+		| cfstm (CJUMP (ro, e1, e2, l1, l2)) = CJUMP (ro, cfexp e1, cfexp e2, l1, l2)
+		| cfstm (SEQ (s1, s2)) = SEQ (cfstm s1, cfstm s2) 
+		| cfstm stm = stm
+
 end
 

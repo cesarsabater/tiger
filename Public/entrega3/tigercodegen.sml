@@ -33,7 +33,7 @@ let
 	                             | LE => "BLE"
 	                             | NE => "BNE"
 	                           
-	    in emit (OPER {assem = "CMP's0, 's1\n" ^ instr ^ lab1,
+	    in emit (OPER {assem = "CMP 's0, 's1\n" ^ instr ^ lab1,
 	                   src = [munchExp e1, munchExp e2], dst = [],
 	                   jump = SOME [lab1,lab2] })
 	                   
