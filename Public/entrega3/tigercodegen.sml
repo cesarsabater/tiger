@@ -23,7 +23,6 @@ let
 	  
 	  | munchStm (EXP e) = let val _ = (munchExp e) in () end 
  	  
- 	  
 	  
 	  | munchStm (CJUMP (relop,e1,e2,lab1,lab2)) =
 	    
@@ -78,18 +77,15 @@ let
 	                src = [munchExp e1,munchExp e2], 
 	                dst = [],
 	                jump = NONE }) 
-	  
+	                
 	  | munchStm (tigertree.LABEL lab) = 
 	     emit( tigerassem.LABEL { assem = lab ^ ": \n" , lab = lab} )
 	     
 	                
       | munchStm _ = emit(OPER {assem="", src=[], dst=[], jump=NONE }) 
-				
-		
+					
 	and result gen = let val t = tigertemp.newtemp() in gen t; t end
 	
-	
-
 	and munchExp (MEM (BINOP (PLUS, CONST i, e1))) = 
 	      
 	     result(fn r => emit(OPER
