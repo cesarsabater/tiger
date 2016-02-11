@@ -21,9 +21,9 @@ open tigertree
 
 type level = int
 
-val fp = "FP"				(* frame pointer *)
-val sp = "SP"				(* stack pointer *)
-val rv = "RV"				(* return value  *) 
+val fp = "fp"				(* frame pointer *)
+val sp = "sp"				(* stack pointer *)
+val rv = "r0"				(* return value  *) 
 val ov = "OV"				(* overflow value (edx en el 386) *)
 val wSz = 4					(* word size in bytes *)
 val log2WSz = 2				(* base two logarithm of word size in bytes *)

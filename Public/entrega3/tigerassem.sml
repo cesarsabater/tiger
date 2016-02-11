@@ -27,7 +27,7 @@ struct
                 (n (List.nth(ll, index)))^(format1 n st (dst, src, jump))
             end
      | format1 n (c::st) (d,s,j) = 
-            (Char.toString c)^(format1 n st (d,s,j))
+           (String.str c) ^ (format1 n st (d,s,j))
 
     fun format n (OPER {assem, dst, src, jump} ) =
             format1 n (String.explode assem) (dst, src, jump)
