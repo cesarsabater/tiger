@@ -18,12 +18,15 @@
 structure tigerframe :> tigerframe = struct
 
 open tigertree
+open tigerassem
 
 type level = int
 
 val fp = "fp"				(* frame pointer *)
-val sp = "sp"				(* stack pointer *)
 val rv = "r0"				(* return value  *) 
+val sp = "r13"				(* stack pointer *)
+val lr = "r14"				(* link register *) 
+val pc = "r15" 				(* program counter *)
 val ov = "OV"				(* overflow value (edx en el 386) *)
 val wSz = 4					(* word size in bytes *)
 val log2WSz = 2				(* base two logarithm of word size in bytes *)
@@ -37,10 +40,10 @@ val regInicial = 1			(* reg *)
 val localsInicial = 0		(* words *)
 val localsGap = ~4 			(* bytes *)
 val calldefs = [rv]
-val specialregs = [rv, fp, sp]
-val argregs = []
+val specialregs = [fp, sp, lr, pc]
+val argregs = [rv, "r1", "r2", "r3"]
 val callersaves = []
-val calleesaves = []
+val calleesaves = ["r4","r5","r6","r7","r8","r9","r10","r11" ]
 
 type frame = {
 	name: string,
@@ -87,4 +90,7 @@ fun exp(InFrame k) e = MEM(BINOP(PLUS, e, CONST k))
 fun externalCall(s, l) = CALL(NAME s, l)
 
 fun procEntryExit1 (frame,body) = body
+
+fun procEntryExit2 (frame, body) = 
+	body @ [ OPER{assem="", src=[rv,sp] @ calleesaves, dst=[], jump=SOME[]}]
 end
