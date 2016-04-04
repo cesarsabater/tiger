@@ -49,13 +49,13 @@ let
 	  
 
 	  | munchStm (JUMP (NAME (lab), _)) =
-	    emit (OPER {assem = "B "^lab^"\n",
+	    emit (OPER {assem = "b       "^lab^"\n",
 	                src = [], dst = [],
 	                jump = SOME [lab] })
 	  
 	  
 	  | munchStm (JUMP ( e1 , labels) ) =
-	    emit (OPER {assem = "BX 's0\n",
+	    emit (OPER {assem = "bx      's0\n",  (* ojo con bx *)
 	                src = [munchExp e1], dst = [],
 	                jump = SOME labels })
 	     
@@ -66,26 +66,26 @@ let
        let val argtemps = munchArgs(0,args) 
            fun genPush _ [] = () 
              | genPush n (h::t) =(if n < List.length argregs then
-                                     (emit(tigerassem.MOVE{assem = "MOV 'd0, 's0\n",src = h,dst = List.nth(argregs,n)}) ; genPush (n+1) t) 
+                                     (emit(tigerassem.MOVE{assem = "mov     'd0, 's0\n",src = h,dst = List.nth(argregs,n)}) ; genPush (n+1) t) 
                                   else              
-                                     (emit(OPER{assem = "PUSH {'s0}\n", src=[h], dst=[], jump=NONE}) ; genPush (n+1) t)
+                                     (emit(OPER{assem = "push    {'s0}\n", src=[h], dst=[], jump=NONE}) ; genPush (n+1) t)
                                   ) 
        in
         genPush 0 argtemps ;
-        emit (OPER {assem = "BL " ^ lf ^ "\n",
+        emit (OPER {assem = "bl      " ^ lf ^ "\n",
 					src =  argtemps,
                     dst = calldefs,
                     jump = NONE})   (* O jump = lf ?*)	  
 	    end
     
 	  | munchStm (MOVE(TEMP t1, e2)) = 
-	     emit(OPER {assem= "MOV 'd0,'s0\n",
+	     emit(OPER {assem= "mov     'd0, 's0\n",
 	                src = [munchExp e2],
 	                dst = [t1],
 	                jump = NONE })
 	  | munchStm (MOVE(MEM e1, BINOP(PLUS, CONST i, TEMP sp) )) =  (* i mult de 4 entre 0 y 1020*)
 	     if ((i >= 0) andalso (i <= 1020) andalso (i mod 4 = 0)) then 
-	       (emit(OPER {assem= "STR 's0, [sp,#" ^ Int.toString i ^ "]\n",
+	       (emit(OPER {assem= "str     's0, [sp, #" ^ Int.toString i ^ "]\n",
 	                src = [munchExp e1,sp], 
 	                dst = [],
 	                jump = NONE }))
