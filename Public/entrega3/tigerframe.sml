@@ -59,6 +59,10 @@ type register = string
 datatype access = InFrame of int | InReg of tigertemp.label
 datatype frag = PROC of {body: tigertree.stm, frame: frame}
 	| STRING of tigertemp.label * string
+datatype canonfrag = 
+    CANONPROC of {body: tigertree.stm list, frame: frame}
+    | CANONSTRING of tigertemp.label * string
+
 fun newFrame{name, formals} = {
 	name=name,
 	formals=formals,

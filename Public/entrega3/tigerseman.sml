@@ -543,8 +543,10 @@ let
         | getStrings (_::fmts) = getStrings fmts
 
     fun getCanonFmts [] = []
-        | getCanonFmts ((tigerframe.PROC {body, frame})::fmts) = (canonize body, frame)::(getCanonFmts fmts)
-        | getCanonFmts (_::fmts) = getCanonFmts fmts 
+        | getCanonFmts ((tigerframe.PROC {body, frame})::fmts) = 
+                    tigerframe.CANONPROC { body = canonize body, frame=frame}::(getCanonFmts fmts)
+        | getCanonFmts (tigerframe.STRING (l, s)::fmts) = 
+                    tigerframe.CANONSTRING (l, s)::getCanonFmts fmts 
 
     fun printIR [] = [] 
            | printIR ((tigerframe.PROC {body=b, frame=f})::fmts) =
@@ -567,12 +569,14 @@ let
     |   geninstr1 frame (st::stl) = (codegen frame st)@(geninstr1 frame stl) 
     
     fun geninstr [] = []
-    |   geninstr ((stl,frame)::l) = (geninstr1 frame stl)@(geninstr l)
+    |   geninstr (tigerframe.CANONPROC {body, frame}::l) = (geninstr1 frame body)@(geninstr l)
+    |   geninstr (tigerframe.CANONSTRING (l,s)::cfl) = geninstr cfl
     
     val instr2string = format (fn t => t)
     
     fun code2string [] = ""
     |   code2string (instr::l) = (instr2string instr)^(code2string l)
+    
     fun printCode fmts =
         ( print "\nCodigo:\n"; 
           print (code2string (geninstr fmts));
@@ -589,7 +593,7 @@ let
     
     (* obtenemos e imprimimos resultados *)
     val res = getResult()
-    val canonfmts = getCanonFmts res
+    val canonfmts = getCanonFmts res 
     (* val _ = print(Ir(res)) *)
     val _ = printIR(getResult())		
     (* val _ = tigerinterp.inter false canonfmts (getStrings res) *)
