@@ -22,7 +22,10 @@ open tigertree
 type level = int
 
 val fp = "fp"				(* frame pointer *)
-val sp = "sp"				(* stack pointer *)
+val rv = "r0"
+val sp = "r13"				(* stack pointer *)
+val lr = "r14" 
+val pc = "r15"
 val rv = "r0"				(* return value  *) 
 val ov = "OV"				(* overflow value (edx en el 386) *)
 val wSz = 4					(* word size in bytes *)
@@ -37,10 +40,10 @@ val regInicial = 1			(* reg *)
 val localsInicial = 0		(* words *)
 val localsGap = ~4 			(* bytes *)
 val calldefs = [rv]
-val specialregs = [rv, fp, sp]
-val argregs = []
+val specialregs = [rv, fp, sp, lr, pc]
+val argregs = [rv, "r1", "r2", "r3"]
 val callersaves = []
-val calleesaves = []
+val calleesaves = ["r4","r5","r6","r7","r8","r9","r10","r11"]
 
 type frame = {
 	name: string,
@@ -50,6 +53,7 @@ type frame = {
 	actualLocal: int ref,
 	actualReg: int ref
 }
+
 type register = string
 datatype access = InFrame of int | InReg of tigertemp.label
 datatype frag = PROC of {body: tigertree.stm, frame: frame}
