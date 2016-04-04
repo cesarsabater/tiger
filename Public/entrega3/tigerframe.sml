@@ -18,6 +18,7 @@
 structure tigerframe :> tigerframe = struct
 
 open tigertree
+open tigerassem
 
 type level = int
 
@@ -91,4 +92,7 @@ fun exp(InFrame k) e = MEM(BINOP(PLUS, e, CONST k))
 fun externalCall(s, l) = CALL(NAME s, l)
 
 fun procEntryExit1 (frame,body) = body
+
+fun procEntryExit2 (frame, body) = 
+    body @ [ OPER{assem="", src=[], dst=[rv, sp]@calleesaves, jump=SOME []} ] (* checkear mejor *)  
 end
