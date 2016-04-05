@@ -24,7 +24,7 @@ let
 
 	and munchStm (SEQ(a,b)) = (munchStm a ; munchStm b)
 	  
-	  | munchStm (EXP e) = let val _ = (munchExp e) in () end 
+	  
  	  
 	  
 	  | munchStm (CJUMP (relop,e1,e2,lab1,lab2)) =
@@ -71,12 +71,13 @@ let
                                      (emit(OPER{assem = "push    {'s0}\n", src=[h], dst=[], jump=NONE}) ; genPush (n+1) t)
                                   ) 
        in
+        print "Hooooooooooooooo!\n" ; 
         genPush 0 argtemps ;
         emit (OPER {assem = "bl      " ^ lf ^ "\n",
 					src =  argtemps,
                     dst = calldefs,
                     jump = NONE})   (* O jump = lf ?*)	  
-	    end
+	   end
     
 	  | munchStm (MOVE(TEMP t1, e2)) = 
 	     emit(OPER {assem= "mov     'd0, 's0\n",
@@ -130,6 +131,8 @@ let
 	  | munchStm (tigertree.LABEL lab) = 
 	     emit( tigerassem.LABEL { assem = lab ^ ": \n" , lab = lab} )
 	     
+	  
+	  | munchStm (EXP e) = let val _ = (munchExp e) in () end 
 	                
       | munchStm _ = emit(OPER {assem="", src=[], dst=[], jump=NONE }) 
 					
