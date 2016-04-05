@@ -549,17 +549,17 @@ let
                     tigerframe.CANONSTRING (l, s)::getCanonFmts fmts 
 
     fun printIR [] = [] 
-           | printIR ((tigerframe.PROC {body=b, frame=f})::fmts) =
+           | printIR ((tigerframe.CANONPROC {body, frame=f})::fmts) =
                 let
                     val _ = print ("\nFragment \""^(tigerframe.name f)^"\":\n")
-                    val _ = map (fn st => print (tigerit.tree st)) (canonize b)
+                    val _ = map (fn st => print (tigerit.tree st)) (body)
                 in	
                     printIR(fmts) 
                 end
-           | printIR (s::fmts) = 
+           | printIR (tigerframe.CANONSTRING s::fmts) = 
                 let 
                     val _ = print("\nString Fragment:\n")
-                    val _ = print(Ir([s]))
+                    val _ = print(Ir([tigerframe.STRING s]))
                 in 
                         printIR(fmts)
                 end
@@ -595,7 +595,7 @@ let
     val res = getResult()
     val canonfmts = getCanonFmts res 
     (* val _ = print(Ir(res)) *)
-    val _ = printIR(getResult())		
+    val _ = printIR(canonfmts)		
     (* val _ = tigerinterp.inter false canonfmts (getStrings res) *)
     val _ = printCode canonfmts
 
