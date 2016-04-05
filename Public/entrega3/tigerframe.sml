@@ -23,11 +23,10 @@ open tigerassem
 type level = int
 
 val fp = "fp"				(* frame pointer *)
-val rv = "r0"
-val sp = "r13"				(* stack pointer *)
-val lr = "r14" 
-val pc = "r15"
 val rv = "r0"				(* return value  *) 
+val sp = "r13"				(* stack pointer *)
+val lr = "r14"				(* link register *) 
+val pc = "r15" 				(* program counter *)
 val ov = "OV"				(* overflow value (edx en el 386) *)
 val wSz = 4					(* word size in bytes *)
 val log2WSz = 2				(* base two logarithm of word size in bytes *)
@@ -98,5 +97,6 @@ fun externalCall(s, l) = CALL(NAME s, l)
 fun procEntryExit1 (frame,body) = body
 
 fun procEntryExit2 (frame, body) = 
-    body @ [ OPER{assem="", src=[], dst=[sp, pc]@calleesaves, jump=SOME []} ] (* checkear mejor *)  
+	body @ [ OPER{assem="", src=[rv,sp] @ calleesaves, dst=[], jump=SOME[]}]
+
 end
