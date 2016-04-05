@@ -157,4 +157,7 @@ and getnext(table,(b as (LABEL lab::_))::rest) =
 fun traceSchedule(blocks,done) = 
        getnext(foldr enterblock (tabNueva()) blocks, blocks)
          @ [LABEL done]
+         
+
+
 end
