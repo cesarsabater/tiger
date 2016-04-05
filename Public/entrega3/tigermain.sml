@@ -37,7 +37,6 @@ fun main(args) =
 		
 		
 		(* utileria *)
-
 		fun canonize x = traceSchedule (basicBlocks (linearize x)) 
 
 		(* manipulacion de fragmentos *)
