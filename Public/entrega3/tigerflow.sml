@@ -1,6 +1,4 @@
-structure tigerflow :
-
-sig
+structure tigerflow = struct
 
    structure Graph
    datatype flowgraph =
