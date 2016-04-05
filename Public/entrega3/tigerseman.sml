@@ -582,7 +582,8 @@ let
           print (code2string (geninstr fmts));
           print "\n"
         )
-        
+    
+    (* acá empieza la magia *)
     (* main *)
     val main =
         LetExp({decs=[FunctionDec[({name="_tigermain", params=[],
@@ -590,7 +591,6 @@ let
                 body=UnitExp 0}, 0)
     (* generamos codigo intermedio *)
     val _ = transExp(tab_vars, tab_tipos) main
-    
     (* obtenemos e imprimimos resultados *)
     val res = getResult()
     val canonfmts = getCanonFmts res 
@@ -598,7 +598,6 @@ let
     val _ = printIR(canonfmts)		
     (* val _ = tigerinterp.inter false canonfmts (getStrings res) *)
     val _ = printCode canonfmts
-
 in	
         ( print "bien!\n" ) 
 end
