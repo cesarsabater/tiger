@@ -40,10 +40,10 @@ val regInicial = 1			(* reg *)
 val localsInicial = 0		(* words *)
 val localsGap = ~4 			(* bytes *)
 val calldefs = [rv]
-val specialregs = [fp, sp, lr, pc]
+val specialregs = [rv, fp, sp, lr, pc]
 val argregs = [rv, "r1", "r2", "r3"]
 val callersaves = []
-val calleesaves = ["r4","r5","r6","r7","r8","r9","r10","r11" ]
+val calleesaves = ["r4","r5","r6","r7","r8","r9","r10","r11"]
 
 type frame = {
 	name: string,
@@ -53,10 +53,15 @@ type frame = {
 	actualLocal: int ref,
 	actualReg: int ref
 }
+
 type register = string
 datatype access = InFrame of int | InReg of tigertemp.label
 datatype frag = PROC of {body: tigertree.stm, frame: frame}
 	| STRING of tigertemp.label * string
+datatype canonfrag = 
+    CANONPROC of {body: tigertree.stm list, frame: frame}
+    | CANONSTRING of tigertemp.label * string
+
 fun newFrame{name, formals} = {
 	name=name,
 	formals=formals,
@@ -93,4 +98,5 @@ fun procEntryExit1 (frame,body) = body
 
 fun procEntryExit2 (frame, body) = 
 	body @ [ OPER{assem="", src=[rv,sp] @ calleesaves, dst=[], jump=SOME[]}]
+
 end

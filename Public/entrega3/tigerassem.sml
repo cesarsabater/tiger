@@ -14,8 +14,6 @@ struct
 								 dst: temp, 
 								 src: temp } 
     
-    
-    
     fun format1 _ [] _ = ""
       | format1 n (#"'"::(c::(i::st))) (dst,src,jump) = 
             let val ll = case c of 
