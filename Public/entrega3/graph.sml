@@ -1,7 +1,7 @@
 structure Graph :> GRAPH =
 struct
   type node' = int
-  type temp = Temp.temp
+  type temp = tigertemp.temp
 
   datatype noderep = NODE of {succ: node' list, pred: node' list}
 
@@ -70,9 +70,8 @@ struct
   val mk_edge = diddle_edge (op ::)
   val rm_edge = diddle_edge delete
 
-  structure Table = IntMapTable(type key = node
-				fun getInt(g,n) = n)
-
+  type 'a table = (node, 'a) tigertab.Tabla
+  fun newTable () = tigertab.newTable eq
 
   fun nodename(g,i:int) = "n" ^ Int.toString(i)
 
