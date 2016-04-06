@@ -1,14 +1,15 @@
 structure tigermakegraph :> tigermakegraph = struct
 
     open tigerassem
+    open tigergraph
+    open tigertab
     
     
+   fun instrs2graph instr_list = 
     
-   (* fun instrs2graph instr_list = 
-    
-    let *) 
+    let 
       
-      val control = Graph.newGraph() 
+      val control = newGraph() 
       (*val def = Graph.newTable()
       val use = Graph.newTable()
       val ismove = Graph.newTable()
@@ -18,13 +19,16 @@ structure tigermakegraph :> tigermakegraph = struct
       (* obtengo un nodo por instruccion *)
       fun nodeFromInstr _ = newNode (control)
   
-      val instrnodes = map nodeFromInstr instr_list
+      val instr_nodes = map nodeFromInstr instr_list
   
-      fun useFromInstr (node, OPER {_ , _, src , _}, tabla)  = tabInserta (node, src, tabla)
-      |   useFromInstr (node, MOVE {_  ,_, src }, tabla) = tabInserta (node, src, tabla)
-      |   useFromInstr (node, LABEL {_, _}, tabla) = tabla
+      fun useFromInstr (node, OPER { src, ... }, tabla)  = tabInserta (node, src, tabla)
+      |   useFromInstr (node, MOVE { src, ... }, tabla) = tabInserta (node, [src], tabla)
+      |   useFromInstr (node, LABEL { ... }, tabla) = tabla
   
-      val use = ListPair.foldrEQ useFromInstr Graph.newTable (instr_nodes, instr_list)
+	  val foldinstr : (node list * instr list) -> instr table 
+	  fun foldinstr = ListPair.foldr useFromInstr (tabNueva ()) 
+	  val use = foldinstr (instr_nodes, instr_list)
+      (* val use = ListPair.foldr useFromInstr (tabNueva()) (instr_nodes, instr_list) *)
   
   
     (*  fun getdef OPER {_ , dst, _ , _}  = dst
@@ -74,7 +78,10 @@ structure tigermakegraph :> tigermakegraph = struct
 
 
       fun findLabel lab *)
-           
+    in 
+       {}
+       
+    end      
 
 
 

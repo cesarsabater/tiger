@@ -12,11 +12,11 @@ struct
   fun isBogus(NODE{succ= ~1::_,...}) = true
     | isBogus _ = false
 
-  structure A = DynamicArrayFn(struct open Array
+  structure A = struct open Dynarray
 				    type elem = noderep
 				    type vector = noderep vector
 				    type array = noderep array
-                             end)
+                 end
 
   type graph = A.array
 
@@ -70,8 +70,12 @@ struct
   val mk_edge = diddle_edge (op ::)
   val rm_edge = diddle_edge delete
 
-  type 'a table = (node, 'a) tigertab.Tabla
-  fun newTable () = tigertab.newTable eq
+ 
+ 
+
+   type 'a table = (node, 'a) tigertab.Tabla
+   fun newTable () = tigertab.tabNueva ()
+
 
   fun nodename(g,i:int) = "n" ^ Int.toString(i)
 
