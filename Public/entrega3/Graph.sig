@@ -1,4 +1,4 @@
-signature GRAPH =
+signature Graph =
 sig
     type graph
     type node
