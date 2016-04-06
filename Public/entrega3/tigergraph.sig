@@ -1,4 +1,4 @@
-signature Graph =
+signature tigergraph =
 sig
     type graph
     type node

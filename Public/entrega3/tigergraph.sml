@@ -1,4 +1,4 @@
-structure Graph :> Graph =
+structure tigergraph :> tigergraph =
 struct
   type node' = int
   type temp = tigertemp.temp
