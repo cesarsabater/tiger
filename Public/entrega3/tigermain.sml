@@ -32,17 +32,24 @@ fun main(args) =
 		val _ = findEscape(expr)
 		val _ = if arbol then tigerpp.exprAst expr else ()
 		
-		
-		
-		(* utileria *)
 		(* aca empieza la magia *)
 		val _ = transProg(expr)
-		(* obtenemos e imprimimos resultados *)
-		val canonfmts = getCanonFmts (getResult())
-		(* val _ = print(Ir(res)) *)
-		val _ = printIR(canonfmts)		
+		
+		(* obtenemos el codigo intermedio *)
+		val fragments = getResult()
+		val _ = print "CODIGO INTERMEDIO: \n\n" 
+		val _ = printFragments(fragments)
+		val _ = print "\n\n\n"
+		
+		(* caninizamos el codigo intermedio *)
+		val canonfmts = genCanonFmts fragments
+		val _ = print "CODIGO INTERMEDIO CANONIZADO: \n\n" 
+		val _ = printCanonFmts(canonfmts)	
+		val _ = print "\n\n\n"	
+		
 		(* val _ = tigerinterp.inter false canonfmts (getStrings res) *)
-		val _ = printCode canonfmts
+		val instructions = geninstr canonfmts
+		val _ = printCode instructions
 		
 	in
 		

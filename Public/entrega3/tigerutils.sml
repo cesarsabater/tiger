@@ -12,26 +12,43 @@ open tigerassem
 			| getStrings ((tigerframe.STRING(l,s))::fmts) = (l,s)::(getStrings fmts)
 			| getStrings (_::fmts) = getStrings fmts *)
 
-		fun getCanonFmts [] = []
-			| getCanonFmts ((tigerframe.PROC {body, frame})::fmts) = 
-						tigerframe.CANONPROC { body = canonize body, frame=frame}::(getCanonFmts fmts)
-			| getCanonFmts (tigerframe.STRING (l, s)::fmts) = 
-						tigerframe.CANONSTRING (l, s)::getCanonFmts fmts 
+		fun genCanonFmts [] = []
+			| genCanonFmts ((tigerframe.PROC {body, frame})::fmts) = 
+						tigerframe.CANONPROC { body = canonize body, frame=frame}::(genCanonFmts fmts)
+			| genCanonFmts (tigerframe.STRING (l, s)::fmts) = 
+						tigerframe.CANONSTRING (l, s)::genCanonFmts fmts 
 
-		fun printIR [] = () 
-			   | printIR ((tigerframe.CANONPROC {body, frame=f})::fmts) =
+		fun printFragments [] = () 
+			   | printFragments ((tigerframe.PROC {body, frame=f})::fmts) =
+					let
+						val _ = print ("\nFragment \""^(tigerframe.name f)^"\":\n")
+						val _ = print (tigerit.tree body)
+					in	
+						printFragments(fmts) 
+					end
+			   | printFragments (s::fmts) = 
+					let 
+						val _ = print("\nString Fragment:\n")
+						val _ = print(Ir([s]))
+					in 
+							printFragments(fmts)
+					end
+
+
+		fun printCanonFmts [] = () 
+			   | printCanonFmts ((tigerframe.CANONPROC {body, frame=f})::fmts) =
 					let
 						val _ = print ("\nFragment \""^(tigerframe.name f)^"\":\n")
 						val _ = map (fn st => print (tigerit.tree st)) (body)
 					in	
-						printIR(fmts) 
+						printCanonFmts(fmts) 
 					end
-			   | printIR (tigerframe.CANONSTRING s::fmts) = 
+			   | printCanonFmts (tigerframe.CANONSTRING s::fmts) = 
 					let 
 						val _ = print("\nString Fragment:\n")
 						val _ = print(Ir([tigerframe.STRING s]))
 					in 
-							printIR(fmts)
+							printCanonFmts(fmts)
 					end
 
 		(* generacion de instrucciones *)
@@ -47,11 +64,10 @@ open tigerassem
 		fun code2string [] = ""
 		|   code2string (instr::l) = (instr2string instr)^(code2string l)
 		
-		fun printCode fmts =
+		fun printCode instrlist =
 			( print "\nCodigo:\n"; 
-			  print (code2string (geninstr fmts));
+			  print (code2string instrlist);
 			  print "\n"
 			)
-
 
 end
