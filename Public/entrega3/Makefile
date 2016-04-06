@@ -37,7 +37,7 @@ EXEFILE=
 GRALOBJS= tigerabs.uo tigergrm.uo tigerlex.uo tigermain.uo \
 	tigernlin.uo tigerpp.uo tigerescap.uo tigertab.uo topsort.uo tigerseman.uo tigertemp.uo tigertree.uo \
 	tigerframe.uo tigertrans.uo tigerit.uo tigerpila.uo tigercanon.uo tigerinterp.uo tigercodegen.uo tigerassem.uo \
-	tigerutils.uo tigergraph.uo
+	tigerutils.uo tigergraph.uo tigerflow.uo tigermakegraph.uo
 
 all: tiger
 
@@ -77,45 +77,46 @@ depend: tigerabs.sml tigergrm.sml tigerlex.sml tigermain.sml \
 
 ### DO NOT DELETE THIS LINE
 tigerseman.ui: tigerabs.uo 
-tigerit.uo: tigertree.uo tigertab.ui 
+tigerflow.ui: tigergraph.ui tigertemp.ui 
 tigersimpleregalloc.uo: tigersimpleregalloc.ui tigerassem.ui 
+tigertab.uo: tigertab.ui 
+tigermain.uo: tigerseman.ui tigerescap.ui tigergrm.ui tigerlex.uo \
+    tigerutils.ui tigertrans.ui tigerpp.uo 
+tigerflow.uo: tigerflow.ui 
+tigergrm.uo: tigergrm.ui tigernlin.uo tigerabs.uo 
+tigergraph.uo: tigergraph.ui tigertab.ui tigertemp.ui 
+tigertrans.uo: tigertrans.ui tigertree.uo tigerpila.ui tigerframe.ui \
+    tigerit.uo tigertemp.ui tigerabs.uo 
+tigerpp.uo: tigerabs.uo 
+tigerescap.ui: tigerabs.uo 
+tigersres.uo: tigertab.ui tigertips.uo tigertemp.ui tigerabs.uo \
+    tigertrans.ui 
+tigerframe.ui: tigertree.uo tigerassem.ui tigertemp.ui 
 tigerutils.ui: tigertree.uo tigerframe.ui tigerassem.ui 
+tigertemp.uo: tigertemp.ui 
+tigerutils.uo: tigerutils.ui tigercodegen.ui tigerframe.ui tigerit.uo \
+    tigercanon.ui tigerassem.ui tigertrans.ui 
+tigergraph.ui: tigertab.ui 
+tigermakegraph.ui: tigerassem.ui tigerflow.ui 
+tigerinterp.uo: tigertree.uo tigertab.ui tigerframe.ui tigerit.uo \
+    tigertemp.ui 
 tigerseman.uo: tigerseman.ui tigercodegen.ui tigersres.uo tigertab.ui \
     tigerpila.ui topsort.uo tigercanon.ui tigerassem.ui tigertemp.ui \
     tigerabs.uo tigertrans.ui 
-tigerassem.ui: tigertemp.ui 
-tigersres.uo: tigertab.ui tigertips.uo tigertemp.ui tigerabs.uo \
-    tigertrans.ui 
-tigertree.uo: tigertemp.ui 
-tigerassem.uo: tigerassem.ui tigertemp.ui 
-tigermakegraph.uo: tigermakegraph.ui tigerassem.ui 
-tigerframe.uo: tigerframe.ui tigertree.uo tigerassem.ui tigertemp.ui 
 tigercanon.uo: tigercanon.ui tigertree.uo tigertab.ui tigertemp.ui 
-Graph.uo: Graph.ui tigertab.ui tigertemp.ui 
-tigercanon.ui: tigertree.uo tigertemp.ui 
-tigerframe.ui: tigertree.uo tigerassem.ui tigertemp.ui 
-tigerescap.ui: tigerabs.uo 
-tigerflow.uo: Graph.ui tigertemp.ui 
-tigertrans.uo: tigertrans.ui tigertree.uo tigerpila.ui tigerframe.ui \
-    tigerit.uo tigertemp.ui tigerabs.uo 
-tigermain.uo: tigerseman.ui tigerescap.ui tigergrm.ui tigerlex.uo \
-    tigerutils.ui tigertrans.ui tigerpp.uo 
-tigerlex.uo: tigergrm.ui tigernlin.uo 
-tigertemp.uo: tigertemp.ui 
-tigermakegraph.ui: tigerassem.ui tigerflow.uo 
-tigerescap.uo: tigerescap.ui tigertab.ui tigerabs.uo 
-tigersimpleregalloc.ui: tigerframe.ui tigerassem.ui 
-tigerpila.uo: tigerpila.ui 
-Graph.ui: tigertab.ui 
-tigerpp.uo: tigerabs.uo 
-tigerinterp.uo: tigertree.uo tigertab.ui tigerframe.ui tigerit.uo \
-    tigertemp.ui 
-tigertrans.ui: tigertree.uo tigerframe.ui tigertemp.ui tigerabs.uo 
-tigercodegen.ui: tigertree.uo tigerframe.ui tigerassem.ui 
-tigerutils.uo: tigerutils.ui tigercodegen.ui tigerframe.ui tigerit.uo \
-    tigercanon.ui tigerassem.ui tigertrans.ui 
-tigertab.uo: tigertab.ui 
-tigergrm.uo: tigergrm.ui tigernlin.uo tigerabs.uo 
+tigerassem.ui: tigertemp.ui 
 tigercodegen.uo: tigercodegen.ui tigertree.uo tigerframe.ui tigerassem.ui \
     tigertemp.ui 
+tigermakegraph.uo: tigermakegraph.ui tigerassem.ui 
+tigerit.uo: tigertree.uo tigertab.ui 
+tigertree.uo: tigertemp.ui 
 tigergrm.ui: tigerabs.uo 
+tigerlex.uo: tigergrm.ui tigernlin.uo 
+tigerassem.uo: tigerassem.ui tigertemp.ui 
+tigerpila.uo: tigerpila.ui 
+tigerframe.uo: tigerframe.ui tigertree.uo tigerassem.ui tigertemp.ui 
+tigercodegen.ui: tigertree.uo tigerframe.ui tigerassem.ui 
+tigersimpleregalloc.ui: tigerframe.ui tigerassem.ui 
+tigercanon.ui: tigertree.uo tigertemp.ui 
+tigertrans.ui: tigertree.uo tigerframe.ui tigertemp.ui tigerabs.uo 
+tigerescap.uo: tigerescap.ui tigertab.ui tigerabs.uo 
