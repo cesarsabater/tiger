@@ -36,11 +36,38 @@ structure tigermakegraph :> tigermakegraph = struct
       |   moveFromInstr (node, LABEL { ... }, tabla) = Splaymap.insert (tabla,node,false)
   
        
+      fun labFromInstr (node, OPER {... }, tabla)  = tabla  
+      |   labFromInstr (node, MOVE { ... }, tabla) = tabla
+      |   labFromInstr (node, LABEL { lab, ... }, tabla) = Splaymap.insert (tabla,lab,node)
+  
+       
+  
       
+      fun jmpFromInstr (node, next, OPER {jmp = SOME (lablist), ... }), dict = List.app  (fn x => mk_edge {from: node, to : Splaymap.find(dict,x)}) lablist 
+      |   jmpFromInstr (node, next, OPER {jmp = NONE, ... }) dict  = mk_edge {from: node, to : next}  
+      |   jmpFromInstr (node, next, MOVE { ... }) dict = mk_edge {from: node, to : next} 
+      |   jmpFromInstr (node, next, LABEL { ... }) dict =  mk_edge {from: node, to : next} 
+      
+      
+      let fun zip3 a b [] = []
+            | zip3 a [] c = []
+            | zip3 [] b c = []
+            | zip3 (a::ra) (b::rb) (c::rc) = (a,b,c) :: (zip3 ra rb rc)
+            
+      in 
+          List.appy (fn x = > jmpFromInstr x dict) (zip3 node_list (List.tl node_list) instr_list)  
       
       (* fun foldinstr x = let val t = tabNueva ()
 	                    in ListPair.foldr useFromInstr t x 
 	                    end *)
+	  
+	  val labDict : (label,node) Splaymap.dict =
+	    let val vacio : (label,node) Splaymap.dict  = Splaymap.mkDict (String.compare) in
+           ListPair.foldr labFromInstr vacio (node_list, instr_list)	     
+	    end 
+	  
+	  
+	  
 	  
 	  val tabVacia : (tigertemp.temp list) table = newTable()
 	  val tabVaciab : bool table = newTable()
