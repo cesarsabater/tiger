@@ -22,6 +22,9 @@ struct
 
   type node = graph * node'
   fun eq((_,a),(_,b)) = a=b
+  
+  fun cmp((_,a),(_,b)) = Int.compare(a,b)
+
 
   fun augment (g: graph) (n: node') : node = (g,n)
 
@@ -70,14 +73,12 @@ struct
   val mk_edge = diddle_edge (op ::)
   val rm_edge = diddle_edge delete
 
- 
- 
-
-   type 'a table = (node, 'a) tigertab.Tabla
-   fun newTable () = tigertab.tabNueva ()
+   type 'a table = (node, 'a) Splaymap.dict
+   fun newTable () = Splaymap.mkDict cmp 
+   
 
 
-  fun nodename(g,i:int) = "n" ^ Int.toString(i)
+   fun nodename(g,i:int) = "n" ^ Int.toString(i)
 
 end
 

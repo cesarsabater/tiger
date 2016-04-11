@@ -1,9 +1,10 @@
 structure tigermakegraph :> tigermakegraph = struct
 
+   
     open tigerassem
     open tigergraph
-    open tigertab
-    
+ 
+     
     
    fun instrs2graph instr_list = 
     
@@ -19,15 +20,41 @@ structure tigermakegraph :> tigermakegraph = struct
       (* obtengo un nodo por instruccion *)
       fun nodeFromInstr _ = newNode (control)
   
-      val instr_nodes = map nodeFromInstr instr_list
+      val node_list = List.map nodeFromInstr instr_list
   
-      fun useFromInstr (node, OPER { src, ... }, tabla)  = tabInserta (node, src, tabla)
-      |   useFromInstr (node, MOVE { src, ... }, tabla) = tabInserta (node, [src], tabla)
+      (*val useFromInstr : (node * instr * ((tigertemp.temp list) table)) -> ((tigertemp.temp list) table)*)
+      fun useFromInstr (node, OPER { src, ... }, tabla)  = Splaymap.insert (tabla,node,src)  
+      |   useFromInstr (node, MOVE { src, ... }, tabla) =  Splaymap.insert (tabla,node,[src])
       |   useFromInstr (node, LABEL { ... }, tabla) = tabla
   
-	  val foldinstr : (node list * instr list) -> instr table 
-	  fun foldinstr = ListPair.foldr useFromInstr (tabNueva ()) 
-	  val use = foldinstr (instr_nodes, instr_list)
+      fun defFromInstr (node, OPER { dst, ... }, tabla)  = Splaymap.insert (tabla,node,dst)  
+      |   defFromInstr (node, MOVE { dst, ... }, tabla) =  Splaymap.insert (tabla,node,[dst])
+      |   defFromInstr (node, LABEL { ... }, tabla) = tabla
+ 
+      fun moveFromInstr (node, OPER {... }, tabla)  = Splaymap.insert (tabla,node,false)  
+      |   moveFromInstr (node, MOVE { ... }, tabla) =  Splaymap.insert (tabla,node,true)
+      |   moveFromInstr (node, LABEL { ... }, tabla) = Splaymap.insert (tabla,node,false)
+  
+       
+      
+      
+      (* fun foldinstr x = let val t = tabNueva ()
+	                    in ListPair.foldr useFromInstr t x 
+	                    end *)
+	  
+	  val tabVacia : (tigertemp.temp list) table = newTable()
+	  val tabVaciab : bool table = newTable()
+	  
+	  val use (* : (tigertemp.temp list) table *) = 
+	      ListPair.foldr useFromInstr tabVacia (node_list, instr_list)
+	  
+	  val def = ListPair.foldr defFromInstr tabVacia (node_list, instr_list)
+	  
+	  val isMove = ListPair.foldr moveFromInstr tabVaciab (node_list, instr_list)
+	  
+	  (*fun findlabel node_list lab = *)  
+	  
+	  (* val use = foldinstr (instr_nodes, instr_list) *)
       (* val use = ListPair.foldr useFromInstr (tabNueva()) (instr_nodes, instr_list) *)
   
   
