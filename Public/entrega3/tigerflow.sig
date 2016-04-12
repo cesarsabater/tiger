@@ -1,7 +1,5 @@
 signature tigerflow = 
 sig
-  
-
    datatype flowgraph =
    
     FGRAPH of {control : tigergraph.graph, 
