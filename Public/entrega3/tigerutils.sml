@@ -50,13 +50,19 @@ open tigerassem
 					in 
 							printCanonFmts(fmts)
 					end
+   
+        (*aux*)
+        fun genLabel name = LABEL { assem= name ^ ":\n",
+								    lab= name  }
+
+
 
 		(* generacion de instrucciones *)
 		fun geninstr1 _ [] = []
 		|   geninstr1 frame (st::stl) = (codegen frame st)@(geninstr1 frame stl) 
 		
 		fun geninstr [] = []
-		|   geninstr (tigerframe.CANONPROC {body, frame}::l) = (geninstr1 frame body)@(geninstr l)
+		|   geninstr (tigerframe.CANONPROC {body, frame}::l) = genLabel(tigerframe.name frame) :: ((geninstr1 frame body)@(geninstr l))
 		|   geninstr (tigerframe.CANONSTRING (l,s)::cfl) = geninstr cfl
 		
 		val instr2string = format (fn t => t)

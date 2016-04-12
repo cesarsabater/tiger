@@ -20,4 +20,5 @@ sig
  
     val nodename: node->string  (* for debugging only *)
 
+    val printGraph : graph -> unit
 end
