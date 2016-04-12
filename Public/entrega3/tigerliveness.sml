@@ -1,6 +1,8 @@
 structure tigerliveness :> tigerliveness = 
 struct
 open tigertemp
+open tigerflow
+open tigergraph
 
 datatype igraph = 
 		IGRAPH of {graph: tigergraph.graph,
@@ -9,8 +11,22 @@ datatype igraph =
 					moves: (tigergraph.node * tigergraph.node) list
 				}
 				
-type 'a table = (temp, 'a) Splaymap.dict
-type liveSet = unit table * temp list
+type liveSet = temp Splayset.set
 type liveMap = liveSet tigergraph.table
 
+fun interferenceGraph (FGRAPH {control, def, use, ismove}) = 
+let
+
+	fun list2set lst : temp list -> liveSet = addList (Splayset.empty (<)) lst
+	
+	fun intNode (inset, outset) node = 
+	let
+		inset' = list2set 
+	
+	fun intGraph (livein,liveout) = 
+	let 
+		livein' = 
+		
+in 
+	
 end
