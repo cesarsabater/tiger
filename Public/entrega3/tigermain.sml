@@ -4,6 +4,7 @@ open tigerescap
 open tigerseman
 open tigerutils
 open tigertrans
+open tigerliveness
 open BasicIO Nonstdio
 
 fun lexstream(is: instream) =
@@ -51,9 +52,14 @@ fun main(args) =
 		val instructions = geninstr canonfmts
 		val _ = printCode instructions
 		
-		val (tigerflow.FGRAPH{control = flowgraph, ...}, _ ) = tigermakegraph.instrs2graph instructions 
-		val _ = tigergraph.printGraph  flowgraph 
+        val (flowgraph, _) = tigermakegraph.instrs2graph instructions
+		val tigerflow.FGRAPH{control = cgraph, ...} = flowgraph 
+		val _ = tigergraph.printGraph  cgraph
 		
+        val _ = calcLiveness flowgraph
+(*
+        val _ = printLiveOut flowgraph
+*)
 	in
 		
 		print "yes!!\n"

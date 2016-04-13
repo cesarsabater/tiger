@@ -99,11 +99,11 @@ tigerflow.uo: tigerflow.ui tigertab.ui tigergraph.ui tigertemp.ui
 tigertrans.uo: tigertrans.ui tigertree.uo tigerpila.ui tigerframe.ui \
     tigerit.uo tigertemp.ui tigerabs.uo 
 tigermain.uo: tigerseman.ui tigergraph.ui tigerescap.ui tigergrm.ui \
-    tigermakegraph.ui tigerlex.uo tigerutils.ui tigertrans.ui tigerflow.ui \
-    tigerpp.uo 
+    tigermakegraph.ui tigerlex.uo tigerliveness.ui tigerutils.ui \
+    tigertrans.ui tigerflow.ui tigerpp.uo 
 tigerlex.uo: tigergrm.ui tigernlin.uo 
 tigertemp.uo: tigertemp.ui 
-tigerliveness.ui: tigergraph.ui tigertemp.ui 
+tigerliveness.ui: tigergraph.ui tigertemp.ui tigerflow.ui 
 tigermakegraph.ui: tigergraph.ui tigerassem.ui tigerflow.ui 
 tigerliveness.uo: tigerliveness.ui tigergraph.ui tigertemp.ui tigerflow.ui 
 tigerescap.uo: tigerescap.ui tigertab.ui tigerabs.uo 
