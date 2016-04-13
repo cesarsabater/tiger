@@ -37,7 +37,7 @@ EXEFILE=
 GRALOBJS= tigerabs.uo tigergrm.uo tigerlex.uo tigermain.uo \
 	tigernlin.uo tigerpp.uo tigerescap.uo tigertab.uo topsort.uo tigerseman.uo tigertemp.uo tigertree.uo \
 	tigerframe.uo tigertrans.uo tigerit.uo tigerpila.uo tigercanon.uo tigerinterp.uo tigercodegen.uo \
-	tigerassem.uo tigerutils.uo tigergraph.uo tigerflow.uo tigermakegraph.uo tigergraph.uo
+	tigerassem.uo tigerutils.uo tigergraph.uo tigerflow.uo tigermakegraph.uo tigergraph.uo tigerliveness.uo
 
 all: tiger
 
@@ -79,6 +79,7 @@ depend: tigerabs.sml tigergrm.sml tigerlex.sml tigermain.sml \
 tigerescap.uo: tigerescap.ui tigertab.ui tigerabs.uo 
 tigersimpleregalloc.ui: tigerframe.ui tigerassem.ui 
 tigercanon.uo: tigercanon.ui tigertree.uo tigertab.ui tigertemp.ui 
+tigerliveness.uo: tigerliveness.ui tigergraph.ui tigertemp.ui tigerflow.ui 
 tigercodegen.ui: tigertree.uo tigerframe.ui tigerassem.ui 
 tigergraph.uo: tigergraph.ui tigertemp.ui 
 tigerassem.ui: tigertemp.ui 
@@ -97,7 +98,7 @@ tigerpila.uo: tigerpila.ui
 tigerflow.ui: tigergraph.ui tigertemp.ui 
 tigerpp.uo: tigerabs.uo 
 tigermakegraph.uo: tigermakegraph.ui tigergraph.ui tigerassem.ui \
-    tigertemp.ui 
+    tigertemp.ui tigerflow.ui 
 tigercanon.ui: tigertree.uo tigertemp.ui 
 tigerseman.uo: tigerseman.ui tigercodegen.ui tigersres.uo tigertab.ui \
     tigerpila.ui topsort.uo tigercanon.ui tigerassem.ui tigertemp.ui \
@@ -105,8 +106,10 @@ tigerseman.uo: tigerseman.ui tigercodegen.ui tigersres.uo tigertab.ui \
 tigerit.uo: tigertree.uo tigertab.ui 
 tigergrm.ui: tigerabs.uo 
 tigerlex.uo: tigergrm.ui tigernlin.uo 
-tigermain.uo: tigerseman.ui tigerescap.ui tigergrm.ui tigerlex.uo \
-    tigerutils.ui tigertrans.ui tigerpp.uo 
+tigerliveness.ui: tigergraph.ui tigertemp.ui 
+tigermain.uo: tigerseman.ui tigergraph.ui tigerescap.ui tigergrm.ui \
+    tigermakegraph.ui tigerlex.uo tigerutils.ui tigertrans.ui tigerflow.ui \
+    tigerpp.uo 
 tigergrm.uo: tigergrm.ui tigernlin.uo tigerabs.uo 
 tigerseman.ui: tigerabs.uo 
 tigertrans.ui: tigertree.uo tigerframe.ui tigertemp.ui tigerabs.uo 
