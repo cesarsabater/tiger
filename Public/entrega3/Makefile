@@ -36,8 +36,8 @@ EXEFILE=
 
 GRALOBJS= tigerabs.uo tigergrm.uo tigerlex.uo tigermain.uo \
 	tigernlin.uo tigerpp.uo tigerescap.uo tigertab.uo topsort.uo tigerseman.uo tigertemp.uo tigertree.uo \
-	tigerframe.uo tigertrans.uo tigerit.uo tigerpila.uo tigercanon.uo tigerinterp.uo tigercodegen.uo tigerassem.uo \
-	tigerutils.uo tigergraph.uo tigerflow.uo tigermakegraph.uo
+	tigerframe.uo tigertrans.uo tigerit.uo tigerpila.uo tigercanon.uo tigerinterp.uo tigercodegen.uo \
+	tigerassem.uo tigerutils.uo tigergraph.uo tigerflow.uo tigermakegraph.uo tigergraph.uo tigerliveness.uo
 
 all: tiger
 

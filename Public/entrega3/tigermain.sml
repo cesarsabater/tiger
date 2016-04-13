@@ -51,6 +51,9 @@ fun main(args) =
 		val instructions = geninstr canonfmts
 		val _ = printCode instructions
 		
+		val (tigerflow.FGRAPH{control = flowgraph, ...}, _ ) = tigermakegraph.instrs2graph instructions 
+		val _ = tigergraph.printGraph  flowgraph 
+		
 	in
 		
 		print "yes!!\n"

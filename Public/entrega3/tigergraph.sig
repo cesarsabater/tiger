@@ -15,9 +15,10 @@ sig
     val mk_edge: {from: node, to: node} -> unit
     val rm_edge: {from: node, to: node} -> unit
 
-    type 'a table = (node, 'a) tigertab.Tabla
-    val newTable : unit -> 'a table 
-
+    type 'a table = (node, 'a) Splaymap.dict
+    val newTable : unit -> 'a table
+ 
     val nodename: node->string  (* for debugging only *)
 
+    val printGraph : graph -> unit
 end

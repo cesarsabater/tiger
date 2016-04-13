@@ -1,5 +1,4 @@
 signature tigermakegraph =
-
 sig
   
     val instrs2graph : tigerassem.instr list ->
