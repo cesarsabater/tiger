@@ -36,16 +36,26 @@ fun peekorempty dict el =  case (Splaymap.peek (dict,el)) of
                                 SOME s => s
                                 | NONE => emptyLiveSet()
 
+
+fun peekoremptyl dict el =  case (Splaymap.peek (dict,el)) of 
+                                SOME s => s
+                                | NONE => []
+
 fun calcLiveness (FGRAPH {control, def, use, ismove}) = 
 let
 	fun intGraph (livein : liveMap, liveout : liveMap) = 
 	let 
 		fun intNode (node, (lin, lout)) = 
 		let
+			
 			val inset = peekorempty lin node
 			val outset = peekorempty lout node
+(*
 			val defset = list2set (Splaymap.find (def,node))
 			val useset = list2set (Splaymap.find (use,node))
+*)
+			val defset = list2set (peekoremptyl def node)
+			val useset = list2set (peekoremptyl use node)
 			val inset' = union (useset, (difference (outset, defset)))
 			val listofosets' = List.map (peekorempty lin) (succ node)
 			val outset' = List.foldr union (emptyLiveSet ()) listofosets' 
