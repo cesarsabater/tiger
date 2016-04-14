@@ -78,4 +78,54 @@ in
     List.app printNode (nodes control)
 end
 
+(**--------------------------------------*)
+(*El grafo de interferencia. Aditivo*)
+val igraph = newGraph()
+
+(*Las Tablas : nodo a temp y de temp a nodo. Aditivas *)
+val nodeTab : (tigergraph.node,tigertemp.temp)  Polyhash.hash_table = Polyhash.mkTable(Polyhash.hash,tigergraph.eq) (100,NotFound)  
+val tempTab : (tigertemp.temp, tigergraph.node) Polyhash.hash_table = Polyhash.mkTable(Polyhash.hash, (fn (a,b) => (String.compare(a,b) = EQUAL))) (100,NotFound)  
+
+(*tnode y gtemp *)
+fun tnode temp = case (Polyhash.peek tempTab temp) 
+                 of SOME node => node
+                  | NONE => (let val n = newNode(igraph) in Polyhash.insert tempTab (temp,n) ;
+                                                            Polyhash.insert nodeTab (n,temp) ;
+                                                            n 
+                             end)
+
+(* No deberia pasar que no la encuentre *)
+fun gtemp node = Polyhash.find nodeTab node
+
+(* agrega las aristas *)
+fun mk_iedges (alist,blist) = List.app (fn x => List.app (fn y => mk_edge {from= tnode(x), to= tnode(y)}) blist) alist
+
+val movesref = ref ([] : ((tigergraph.node * tigergraph.node) List.list))
+
+fun interferenceGraph (FGRAPH{control = fgraph, def = def, use = use, ismove = ismove}) =
+let
+   (* procesa un nodo del flowgraph*)
+      fun instr_interf flownode = let
+                                         val ismove' = Splaymap.find (ismove,flownode)
+                                         val def'    = Splaymap.find (def,flownode)
+                                         val use'    = Splaymap.find (use,flownode)
+                                  in
+                                    if ismove' then (
+                                       mk_iedges(def', List.filter (fn x => x <> List.hd use') (liveout flownode) ) ; 
+                                       movesref := ((tnode(List.hd def'),tnode(List.hd use')) :: !movesref )   )  (*OJO ACA CON EL ORDEN def use*)
+                                    else
+                                       mk_iedges(def', liveout flownode)
+                                  end
+in                     
+   
+    List.app instr_interf (nodes fgraph) ;
+    (IGRAPH {graph = igraph,
+		    tnode  = tnode, 
+			gtemp  = gtemp, 
+			moves  = !movesref
+		   }, liveout)
+
+end     
+(**-------------------------------*)
+
 end

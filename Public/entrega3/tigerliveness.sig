@@ -7,8 +7,8 @@ sig
 					moves: (tigergraph.node * tigergraph.node) list
 				}
 				
- (*	val interferenceGraph: 
-		tigerflow.flowgraph -> igraph * (tigergraph.node -> tigertemp.temp list) *) 
+ 	val interferenceGraph: 
+		tigerflow.flowgraph -> igraph * (tigergraph.node -> tigertemp.temp list) 
 	
     val calcLiveness: tigerflow.flowgraph -> unit 
     
