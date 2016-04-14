@@ -279,7 +279,7 @@ let
 	val (l1, l2, l3) = (newlabel(), newlabel(), topSalida())
 in
 	Nx (seq[LABEL l1,
-		cf(l2,l3),
+		cf(l3,l2),
 		LABEL l2,
 		expb,
 		JUMP(NAME l1, [l1]),
@@ -471,6 +471,7 @@ in
 	  | _ => raise Fail "Esto no deberia pasar (8)" 
 end (*  Ex (CONST 0)  *) (*COMPLETAR*)
 
+(*
 fun  cfexp (MEM e) = MEM (cfexp e)
    | cfexp (CALL (e, l)) = CALL (cfexp e, (map cfexp l))
    | cfexp (ESEQ (st,ex)) = ESEQ (cfstm st, cfexp ex)
@@ -499,6 +500,7 @@ and cfstm (MOVE (e1,e2)) 	= (MOVE (cfexp e1, cfexp e2))
 		| cfstm (CJUMP (ro, e1, e2, l1, l2)) = CJUMP (ro, cfexp e1, cfexp e2, l1, l2)
 		| cfstm (SEQ (s1, s2)) 	= SEQ (cfstm s1, cfstm s2) 
 		| cfstm stm = stm
+*)
 
 end
 

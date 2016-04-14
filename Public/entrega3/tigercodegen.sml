@@ -134,8 +134,6 @@ let
 	                dst = [],
 	                jump= NONE })  
 	    
-	                 
-	                 
 	  | munchStm (MOVE(MEM e1, e2)) =
 	     emit(OPER {assem= "STR 's1,['s0]\n",
 	                src = [munchExp e1,munchExp e2], 
