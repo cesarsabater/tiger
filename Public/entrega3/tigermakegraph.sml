@@ -19,7 +19,7 @@ structure tigermakegraph :> tigermakegraph = struct
           let 
              fun useFromInstr (node, OPER { src, ... }, tabla)  = Splaymap.insert (tabla,node,src)  
              |   useFromInstr (node, MOVE { src, ... }, tabla) =  Splaymap.insert (tabla,node,[src])
-             |   useFromInstr (node, LABEL { ... }, tabla) = tabla
+             |   useFromInstr (node, LABEL { ... }, tabla) =      Splaymap.insert(tabla,node,[])
           in   
 	      
 	         ListPair.foldr useFromInstr (newTable()) (node_list, instr_list)         
@@ -28,7 +28,7 @@ structure tigermakegraph :> tigermakegraph = struct
                  
       fun defFromInstr (node, OPER { dst, ... }, tabla)  = Splaymap.insert (tabla,node,dst)  
       |   defFromInstr (node, MOVE { dst, ... }, tabla) =  Splaymap.insert (tabla,node,[dst])
-      |   defFromInstr (node, LABEL { ... }, tabla) = tabla
+      |   defFromInstr (node, LABEL { ... }, tabla) =      Splaymap.insert (tabla,node,[])
  
       fun moveFromInstr (node, OPER {... }, tabla)  = Splaymap.insert (tabla,node,false)  
       |   moveFromInstr (node, MOVE { ... }, tabla) =  Splaymap.insert (tabla,node,true)
