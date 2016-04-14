@@ -57,8 +57,7 @@ structure tigermakegraph :> tigermakegraph = struct
 	      end  
           
           (*Agrega aristas nodo->nodo mirando los labels de los jmp. Si no, agrega la arista al proximo*)
-          fun jmpFromInstr (node, next, OPER {jump = SOME (lablist), ... }) dict =  ( (print "WAAAAAAAAAAA\n") ;
-                                                                                      List.app  (fn x => mk_edge ({from= node, to= Splaymap.find(dict,x)})) lablist )
+          fun jmpFromInstr (node, next, OPER {jump = SOME (lablist), ... }) dict =  (List.app  (fn x => mk_edge ({from= node, to= Splaymap.find(dict,x)})) lablist )
           |   jmpFromInstr (node, next, OPER {jump = NONE, ... }) dict  = mk_edge ({from= node, to= next})  
           |   jmpFromInstr (node, next, MOVE { ... }) dict = mk_edge ({from= node, to= next}) 
           |   jmpFromInstr (node, next, LABEL { ... }) dict =  mk_edge ({from= node, to= next}) 
