@@ -63,18 +63,32 @@ let
 	  
 
      | munchStm (EXP(CALL (NAME lf,args))) =
-       let val argtemps = munchArgs(0,args) 
+     
+       
+       let 
+     (*      fun munchArgs (_ , [])     = []
+             | munchArgs (n,(h :: t)) =  if n < List.length argregs then  
+                                          let val argreg = List.nth(argregs,n) in  
+                                          (emit(tigerassem.MOVE{assem = "mov     'd0, 's0\n",src =munchExp h,dst = argreg}) ; argreg :: munchArgs(n+1,t)) end
+                                         else                                        
+                                          (emit(OPER{assem = "push    {'s0}\n", src=[h], dst=[], jump=NONE}) ; munchArgs (n+1),t)
+                                   
+       
+     *)           
+       
+       
+           val argtemps = munchArgs(0,args) 
            fun genPush _ [] = () 
              | genPush n (h::t) =(if n < List.length argregs then
                                      (emit(tigerassem.MOVE{assem = "mov     'd0, 's0\n",src = h,dst = List.nth(argregs,n)}) ; genPush (n+1) t) 
                                   else              
-                                     (emit(OPER{assem = "push    {'s0}\n", src=[h], dst=[], jump=NONE}) ; genPush (n+1) t)
+                                     (emit(OPER{assem = "push    {'s0}\n", src=[h], dst=[], jump=NONE}) ; genPush (n+1) t) 
                                   ) 
        in
         print "Hooooooooooooooo!\n" ; 
         genPush 0 argtemps ;
         emit (OPER {assem = "bl      " ^ lf ^ "\n",
-					src =  argtemps,
+					src = List.take(argregs, Int.min(List.length argregs,List.length argtemps)),
                     dst = calldefs,
                     jump = NONE})   (* O jump = lf ?*)	  
 	   end
