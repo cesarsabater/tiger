@@ -57,6 +57,8 @@ fun main(args) =
 		val _ = tigergraph.printGraph  cgraph
 		
         val _ = calcLiveness flowgraph
+(*        val _ = print "inter\n"
+        val i = interferenceGraph flowgraph *)
 (*
         val _ = printLiveOut flowgraph
 *)
