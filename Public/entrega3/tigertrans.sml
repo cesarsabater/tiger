@@ -71,9 +71,9 @@ fun unNx (Ex e) = EXP e
 fun unCx (Nx s) = raise Fail ("Error (UnCx(Nx..))")
 	| unCx (Cx cf) = cf
 	| unCx (Ex (CONST 0)) =
-	(fn (t,f) => JUMP(NAME f, [f]))
+	(fn (_,f) => JUMP(NAME f, [f]))
 	| unCx (Ex (CONST _)) =
-	(fn (t,f) => JUMP(NAME t, [t]))
+	(fn (t,_) => JUMP(NAME t, [t]))
 	| unCx (Ex e) =
 	(fn (t,f) => CJUMP(NE, e, CONST 0, t, f))
 
@@ -471,6 +471,7 @@ in
 	  | _ => raise Fail "Esto no deberia pasar (8)" 
 end (*  Ex (CONST 0)  *) (*COMPLETAR*)
 
+(*
 fun  cfexp (MEM e) = MEM (cfexp e)
    | cfexp (CALL (e, l)) = CALL (cfexp e, (map cfexp l))
    | cfexp (ESEQ (st,ex)) = ESEQ (cfstm st, cfexp ex)
@@ -499,6 +500,7 @@ and cfstm (MOVE (e1,e2)) 	= (MOVE (cfexp e1, cfexp e2))
 		| cfstm (CJUMP (ro, e1, e2, l1, l2)) = CJUMP (ro, cfexp e1, cfexp e2, l1, l2)
 		| cfstm (SEQ (s1, s2)) 	= SEQ (cfstm s1, cfstm s2) 
 		| cfstm stm = stm
+*)
 
 end
 
