@@ -71,9 +71,9 @@ fun unNx (Ex e) = EXP e
 fun unCx (Nx s) = raise Fail ("Error (UnCx(Nx..))")
 	| unCx (Cx cf) = cf
 	| unCx (Ex (CONST 0)) =
-	(fn (t,f) => JUMP(NAME f, [f]))
+	(fn (_,f) => JUMP(NAME f, [f]))
 	| unCx (Ex (CONST _)) =
-	(fn (t,f) => JUMP(NAME t, [t]))
+	(fn (t,_) => JUMP(NAME t, [t]))
 	| unCx (Ex e) =
 	(fn (t,f) => CJUMP(NE, e, CONST 0, t, f))
 
@@ -279,7 +279,7 @@ let
 	val (l1, l2, l3) = (newlabel(), newlabel(), topSalida())
 in
 	Nx (seq[LABEL l1,
-		cf(l3,l2),
+		cf(l2,l3),
 		LABEL l2,
 		expb,
 		JUMP(NAME l1, [l1]),
