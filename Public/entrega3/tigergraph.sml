@@ -76,8 +76,6 @@ struct
    type 'a table = (node, 'a) Splaymap.dict
    fun newTable () = Splaymap.mkDict cmp 
    
-
-
    fun nodename(g,i:int) = "n" ^ Int.toString(i)
 
    fun printGraph g = 

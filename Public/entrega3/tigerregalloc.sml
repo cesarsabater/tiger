@@ -1,7 +1,5 @@
-
-
 open tigerpila
-
+open tigerliveness
 
 type node = tigregraph.node
 type move = (tigergraph.node * tigergraph.node)
@@ -98,4 +96,27 @@ fun DecrementDegree m  =
    end
  
 
- 
+fun bigDegree n = length (adj n) > 10
+
+fun nodelist2set l = Hashset.addList(Hashset.empty(Hashset.hash,tigergraph.eq), l)
+
+(* agregamos nodos a las listas, ojo, como agregamos precolored ?? *)
+fun initWorkLists (IGRAPH{graph, gnode, gtemp, moves})  = 
+let
+	val precoloredList = ["r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", 
+					   "r9", "r10", "r11", "r12", "r13", "r14", "r15"] 
+	
+	
+	fun selectwl node = 
+		if (bigDegree node) then 
+			HashSet.insert (spillWorkList, node) 
+		else if (MoveRelated n) then 
+			HashSet.insert (freezeWorkList, node)
+		else
+			HashSet.insert (simplifyWorkList, node)
+in
+	
+	List.app selectwl (nodes igraph)  
+end
+	
+	

@@ -100,34 +100,52 @@ fun tnode temp = case (Polyhash.peek tempTab temp)
 (* No deberia pasar que no la encuentre *)
 fun gtemp node = Polyhash.find nodeTab node
 
+(* agrega aristas dirigidas de un nodo a una lista de nodos *)
+fun mk_edges x blist = 
+	List.app (fn y => mk_edge {from= tnode(x), to= tnode(y)}) blist
+
 (* agrega las aristas *)
-fun mk_iedges (alist,blist) = List.app (fn x => List.app (fn y => mk_edge {from= tnode(x), to= tnode(y)}) blist) alist
+fun mk_iedges (alist,blist) = List.app (fn x => mk_edges x blist) alist
 
 val movesref = ref ([] : ((tigergraph.node * tigergraph.node) List.list))
 
-fun interferenceGraph (FGRAPH{control = fgraph, def = def, use = use, ismove = ismove}) =
+fun interferenceGraph (FGRAPH{control = fgraph, def, use, ismove}) =
 let
    (* procesa un nodo del flowgraph*)
       fun instr_interf flownode = let
-                                         val ismove' = Splaymap.find (ismove,flownode)
-                                         val def'    = Splaymap.find (def,flownode)
-                                         val use'    = Splaymap.find (use,flownode)
-                                  in
-                                    if ismove' then (
-                                       mk_iedges(def', List.filter (fn x => x <> List.hd use') (liveout flownode) ) ; 
-                                       movesref := ((tnode(List.hd def'),tnode(List.hd use')) :: !movesref )   )  (*OJO ACA CON EL ORDEN def use*)
-                                    else
-                                       mk_iedges(def', liveout flownode)
-                                  end
+			 val ismove' = Splaymap.find (ismove,flownode)
+			 val def'    = Splaymap.find (def,flownode)
+			 val use'    = Splaymap.find (use,flownode)
+	  in
+		if ismove' then (
+		   mk_iedges(def', List.filter (fn x => x <> List.hd use') (liveout flownode) ) ; 
+		   movesref := ((tnode(List.hd def'),tnode(List.hd use')) :: !movesref )   )  (*OJO ACA CON EL ORDEN def use*)
+		else
+		   mk_iedges(def', liveout flownode)
+	  end
+	 
+	 val precolored = (tigerframe.specialregs
+						@tigerframe.argregs
+						@tigerframe.callersaves
+						@tigerframe.calleesaves)
+	 (* agrega nodos precoloreados *) 
+	 fun addPrecolored ls [] = ()
+	   | addPrecolored rs (t::ts) = 
+			let 
+				val newreg = tnode t 
+				fun make_edges n ns = List.app (fn y => mk_edge {from=n, to=y}) ns
+			in 
+				make_edges newreg rs; 
+				addPrecolored (newreg::rs) ts 
+			end
 in                     
-   
     List.app instr_interf (nodes fgraph) ;
+    addPrecolored [] precolored ; 
     (IGRAPH {graph = igraph,
 		    tnode  = tnode, 
 			gtemp  = gtemp, 
 			moves  = !movesref
 		   }, liveout)
-
 end     
 (**-------------------------------*)
 
