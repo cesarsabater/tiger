@@ -109,8 +109,9 @@ fun mk_iedges (alist,blist) = List.app (fn x => mk_edges x blist) alist
 
 val movesref = ref ([] : ((tigergraph.node * tigergraph.node) List.list))
 
-fun interferenceGraph (FGRAPH{control = fgraph, def, use, ismove}) =
+fun interferenceGraph flowgraph =
 let
+	val (FGRAPH{control = fgraph, def, use, ismove}) = flowgraph
    (* procesa un nodo del flowgraph*)
       fun instr_interf flownode = let
 			 val ismove' = Splaymap.find (ismove,flownode)
@@ -138,7 +139,8 @@ let
 				make_edges newreg rs; 
 				addPrecolored (newreg::rs) ts 
 			end
-in                     
+in        
+	calcLiveness flowgraph;
     List.app instr_interf (nodes fgraph) ;
     addPrecolored [] precolored ; 
     (IGRAPH {graph = igraph,
@@ -147,6 +149,9 @@ in
 			moves  = !movesref
 		   }, liveout)
 end     
+
+fun show (IGRAPH{graph, gtemp, ...}) = tigergraph.printGraphWithNaming graph gtemp
+
 (**-------------------------------*)
 
 end

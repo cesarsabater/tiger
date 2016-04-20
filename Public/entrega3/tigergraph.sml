@@ -83,13 +83,11 @@ struct
           
           fun printEdges n = List.app (fn x => (print (nodename n) ; print " --> " ; print (nodename x) ; print "\n")) (succ n) 
       in  
-      
         print "Nodos : \n" ;
         List.app printNode (nodes g) ;
         print "\n\n Aristas : \n" ;
         List.app printEdges (nodes g) ;
         print "\n\n\n"
-        
       end
 	
 	fun printGraph g = printGraphWithNaming g nodename
