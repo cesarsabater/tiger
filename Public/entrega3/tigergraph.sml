@@ -78,7 +78,7 @@ struct
    
    fun nodename(g,i:int) = "n" ^ Int.toString(i)
 
-   fun printGraph g = 
+   fun printGraphWithNaming g nodename = 
       let fun printNode n = (print (nodename n); print "\n" )
           
           fun printEdges n = List.app (fn x => (print (nodename n) ; print " --> " ; print (nodename x) ; print "\n")) (succ n) 
@@ -91,6 +91,7 @@ struct
         print "\n\n\n"
         
       end
-
+	
+	fun printGraph g = printGraphWithNaming g nodename
 end
 

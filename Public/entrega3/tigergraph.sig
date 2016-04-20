@@ -21,4 +21,6 @@ sig
     val nodename: node->string  (* for debugging only *)
 
     val printGraph : graph -> unit
+    
+    val printGraphWithNaming : graph -> (node -> string) -> unit
 end

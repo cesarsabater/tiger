@@ -124,10 +124,10 @@ let
 		   mk_iedges(def', liveout flownode)
 	  end
 	 
-	 val precolored = (tigerframe.specialregs
-						@tigerframe.argregs
+	 val precolored = (tigerframe.argregs
 						@tigerframe.callersaves
-						@tigerframe.calleesaves)
+						@tigerframe.calleesaves
+						@tigerframe.specialregs)
 	 (* agrega nodos precoloreados *) 
 	 fun addPrecolored ls [] = ()
 	   | addPrecolored rs (t::ts) = 

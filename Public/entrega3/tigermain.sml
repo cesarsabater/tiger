@@ -61,8 +61,8 @@ fun main(args) =
         val _ = print "Liveout Temps:\n"
         val _ = printLiveOut flowgraph
 		val _ = print "inter\n"
-        val i = interferenceGraph flowgraph 
-        
+        val (IGRAPH{graph, gtemp, ...},_) = interferenceGraph flowgraph 
+        val _ = tigergraph.printGraphWithNaming graph gtemp
         
 	in
 		
