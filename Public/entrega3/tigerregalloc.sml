@@ -51,7 +51,7 @@ fun intersect a b =
   end
   
 
-fun Simplify() =
+fun Simplify () =
   
   let fun body v = push selectStack v ;
                    Hashset.delete simplifyWorklist v;    
@@ -95,6 +95,53 @@ fun DecrementDegree m  =
    
    end
  
+fun Coalesce () =
+   let fun body (x,y) = 
+     
+     let fun process (u,v) =
+       
+       if (u = v) then (
+          Hashset.add(coalescedMoves,(x,y)) ;
+          AddWorkList(u)
+       ) else if (Hashset.member(precolored,v) orelse Hashset.member(adjSet,(u,v))) then (
+          Hashset.add(constrainedMoves,(x,y)) ;
+          AddWorkList(u) ;
+          AddWorkList(v) 
+       ) else if (Hashset.member(precolored,u) andalso condition1 (u,v) ) orelse (not(Hashset.member(precolored,u)) andalso condition2(u,v) ) then (
+          Hashset.add(coalescedMoves,(x,y)) ;
+          Combine(u,v) ;
+          AddWorkList(u);
+       ) else  
+          Hashset.add(activeMoves,(x,y)) ;
+     in
+       Hashset.delete(workListMoves,(x,y)) ;
+       if Hashset.member(precolored,y) then process(y,x) else process (x,y) 
+               
+     end  
+   in
+     Hashset.app body worklistMoves
+   end 
+
+
+fun condition1 (u,v) =
+                        
+    Hashset.all (fun x => if not(Hashset.member(selectStack,x) orelse Hashset.member(coalescedNodes,x)) then OKheur x v else true) 
+    adjacent(v)
+
+fun condition2 (u,v) =
+
+   Conservative (adjacent (u)) andalso Conservative (adjacent (v))       
+
+fun AddWorkList(u) = 
+   if not(Hashset.member(precolored,u)) andalso not(MoveRelated(u)) andalso (Polyhash.find(degree,u) < KCONST) then
+      Hashset.delete(freezeWorklist,u)
+      Hashset.add(simplifyWorklist,u) 
+   else ()
+ 
+fun OKheur t r =  (Polyhash.find(degree,t) < KCONST) orelse Hashset.member(precolored,t) orelse Hashset.member(adjSet,(t,r))    
+
+
+
 
 fun bigDegree n = length (adj n) > 10
 
