@@ -26,6 +26,7 @@ val argregs : tigertemp.temp list
 val calldefs : tigertemp.temp list
 val callersaves : tigertemp.temp list
 val calleesaves : tigertemp.temp list
+val usable : tigertemp.temp list
 val exp : access -> tigertree.exp -> tigertree.exp
 val externalCall : string * tigertree.exp list -> tigertree.exp
 val procEntryExit1 : frame * tigertree.stm -> tigertree.stm
