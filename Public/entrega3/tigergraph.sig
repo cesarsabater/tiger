@@ -8,6 +8,7 @@ sig
     val pred: node -> node list
     val adj: node -> node list   (* succ+pred *)
     val eq: node*node -> bool
+	val cmp: node*node -> order
 
     val newGraph: unit -> graph
     val newNode : graph -> node
@@ -21,4 +22,6 @@ sig
     val nodename: node->string  (* for debugging only *)
 
     val printGraph : graph -> unit
+    
+    val printGraphWithNaming : graph -> (node -> string) -> unit
 end
