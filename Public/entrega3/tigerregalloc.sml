@@ -12,8 +12,8 @@ val emptySet : nodeSet = Hashset.empty(Hashset.hash,tigergraph.eq)
 val emptySplaySet = Splayset.empty tigergraph.cmp
 
 (*Conjuntos de nodos*)
-val precolored
-val initial 
+val precolored : nodeSet = Hashset.empty(Hashset.hash,tigergraph.eq)
+val initial : nodeSet : Hashset.empty(Hashset.hash,tigergraph.eq) 
 val simplifyWorklist : nodeSet = Hashset.empty(Hashset.hash,tigergraph.eq) 
 val freezeWorklist : nodeSet = Hashset.empty(Hashset.hash,tigergraph.eq) 
 val spillWorklist : nodeSet = Hashset.empty(Hashset.hash,tigergraph.eq) 
@@ -36,13 +36,12 @@ val adjSet : (node * node) Hashset.set = Hashset.empty(Hashset.hash,moveeq)
 
 val adj_tbl : (tigergraph.node,nodeset) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound) 
 
-val moveList : (tigergraph.node,move) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
+val moveList : (tigergraph.node,moveSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
 val alias : (node,node) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
 (* revisar tipo de color *)
 val nodeColor : (node,tigertemp.temp) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
 
 fun adjacent (v) = (Polyhash.find adj_tbl v)  
-
 
 fun intersect a b = 
   let c = Hashset.empty(Hashset.hash,tigergraph.eq) in
@@ -59,14 +58,14 @@ fun Simplify () =
                    Hashset.app DecrementDegree adjacent(v)
   in
      Hashset.app body simplifyWorklist                
-  
+    
   end  
 
 fun NodeMoves(n) = 
   let c = Hashset.empty(Hashset.hash,tigergraph.eq) in
      Hashset.app (fun x => if (Hashset.member(activeMoves,x) orelse Hashset.member(worklistMoves,x)) 
                            then Hashset.add(c,x) else ()) (Polyhash.find moveList n) ;
-     c 
+     c
   end                         
 
 fun EnableMoves n =
@@ -141,16 +140,57 @@ fun AddWorkList(u) =
  
 fun OKheur t r =  (Polyhash.find(degree,t) < KCONST) orelse Hashset.member(precolored,t) orelse Hashset.member(adjSet,(t,r))    
 
-fun bigDegree n = length (adj n) > 10
-
 fun nodelist2set l = Hashset.addList(Hashset.empty(Hashset.hash,tigergraph.eq), l)
 
-(* agregamos nodos a las listas, ojo, como agregamos precolored ?? *)
-fun initWorkLists (IGRAPH{graph, tnode, gtemp, moves})  = 
-	
-wlet
+fun initialize (IGRAPH{graph, tnode, gtemp, moves})  = 
+let
+    fun addEdges node = 
+    let
+        val scc = succ node
+        val edges = filter (fn x => not (member (precolored, x))) (adj node)
+    in
+        Polyhash.insert(adj_tbl, nodelist2set edges);
+        Polyhash.insert(degree, length edges);
+        List.app (fn x => Hashset.addList(adjSet, [(x, node),(node,x)])) scc
+    end
+    fun peekorempty t n = case Hashset.peek(t,n) of
+                            SOME s => s
+                            | NONE => Hashset.empty(Hashset.hash, moveeq) 
+    fun addMoves (d,s) = 
+    let
+        val movelistd = (peekorempty moveList d) 
+        val movelists = (peekorempty moveList s)
+    in 
+        Hashset.add(movelistd, (d,s));
+        Hashset.add(movelists, (d,s));
+        Hashset.add(wokrlistMoves, (d,s);
+        Polyhash.insert(d, movelistd);
+        Polyhash.insert(s, movelists);
+    end
+    
+    val precoloredList = Splaymap.listItems(tigerliveness.getPrecoloredNodes())
 in
-	List.app selectwl (nodes igraph)  
+    (* precolored *)
+	Hashset.addList(precolored, precoloredList);
+    (* initial *)
+    Hashset.addList(initial, nodes graph);
+    List.app (fn x => Hashset.delete(initial, x)) precoloredList;
+    (* add_tbl (adjList), adjSet y degree *)
+    List.app addEdges (nodes graph)
+    (* moveList y workListmoves *) 
+    List.app addMoves moves
 end
-	
-	
+
+(* mandamos cada nodo a su worklist *) 
+fun selectWL node = 
+let
+    val deg = Polyhash.find(degree, node)
+in
+    if deg >= Hashset.numItems(precolored)
+    then Hashset.add(spillWorklist, node)
+    else if MoveRelated(node) 
+        then Hashset.add(freezeWorkList, node)
+        else Hashset.add(simplifyWorkList, node)   
+end
+
+fun makeWorklist () = Hashset.app selectWL initial

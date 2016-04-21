@@ -18,8 +18,9 @@ val precoloredList = (tigerframe.argregs
 						@tigerframe.calleesaves
 						@tigerframe.specialregs)
 						
-val precoloredNodes = Splayset.empty tigergraph.cmp
-				
+val precoloredNodes = ref (Splayset.empty tigergraph.cmp)
+
+
 type liveSet = temp Splayset.set
 type liveMap = liveSet tigergraph.table
 
@@ -142,7 +143,7 @@ let
 				fun make_edges n ns = List.app (fn y => mk_edge {from=n, to=y}) ns
 			in 
 				make_edges newreg rs; 
-				Splayset.add(precoloredNodes, newreg);
+				precoloredNodes := Splayset.add(!precoloredNodes, newreg);
 				addPrecolored (newreg::rs) ts
 			end
 in        
@@ -157,6 +158,9 @@ in
 end     
 
 fun show (IGRAPH{graph, gtemp, ...}) = tigergraph.printGraphWithNaming graph gtemp
+
+fun getPrecoloredNodes () = !precoloredNodes
+
 
 (**-------------------------------*)
 
