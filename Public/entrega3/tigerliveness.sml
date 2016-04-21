@@ -13,6 +13,13 @@ datatype igraph =
 					moves: (tigergraph.node * tigergraph.node) list
 				}
 				
+val precoloredList = (tigerframe.argregs
+						@tigerframe.callersaves
+						@tigerframe.calleesaves
+						@tigerframe.specialregs)
+						
+val precoloredNodes = Splayset.empty tigergraph.cmp
+				
 type liveSet = temp Splayset.set
 type liveMap = liveSet tigergraph.table
 
@@ -20,7 +27,8 @@ val lIn = ref (newTable () : liveMap)
 val lOut = ref (newTable () : liveMap)
 
 fun emptyLiveSet () = Splayset.empty String.compare
-fun list2set lst = Splayset.addList (emptyLiveSet(), lst)
+fun list2set empty lst = Splayset.addList (empty(), lst)
+fun stringlist2set lst = list2set emptyLiveSet lst
 
 fun curry f = fn x => fn y => f (x,y)
 
@@ -46,8 +54,8 @@ let
 			
 			val inset = peekorempty lin node
 			val outset = peekorempty lout node
-			val defset = list2set (Splaymap.find (def,node))
-			val useset = list2set (Splaymap.find (use,node))
+			val defset = stringlist2set (Splaymap.find (def,node))
+			val useset = stringlist2set (Splaymap.find (use,node))
 			val inset' = union (useset, (difference (outset, defset)))
 			val listofosets' = List.map (peekorempty lin) (succ node)
 			val outset' = List.foldr union (emptyLiveSet ()) listofosets'
@@ -125,10 +133,7 @@ let
 		   mk_iedges(def', liveout flownode)
 	  end
 	 
-	 val precolored = (tigerframe.argregs
-						@tigerframe.callersaves
-						@tigerframe.calleesaves
-						@tigerframe.specialregs)
+	 
 	 (* agrega nodos precoloreados *) 
 	 fun addPrecolored ls [] = ()
 	   | addPrecolored rs (t::ts) = 
@@ -137,12 +142,13 @@ let
 				fun make_edges n ns = List.app (fn y => mk_edge {from=n, to=y}) ns
 			in 
 				make_edges newreg rs; 
-				addPrecolored (newreg::rs) ts 
+				Splayset.add(precoloredNodes, newreg);
+				addPrecolored (newreg::rs) ts
 			end
 in        
 	calcLiveness flowgraph;
     List.app instr_interf (nodes fgraph) ;
-    addPrecolored [] precolored ; 
+    addPrecolored [] precoloredList ; 
     (IGRAPH {graph = igraph,
 		    tnode  = tnode, 
 			gtemp  = gtemp, 

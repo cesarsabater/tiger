@@ -9,10 +9,11 @@ type moveSet = move Hashset.set
 fun moveeq ((a,b),(c,d)) = (tigergraph.eq(a,c)) andalso (tigergraph.eq(b,d))
 
 val emptySet : nodeSet = Hashset.empty(Hashset.hash,tigergraph.eq)
+val emptySplaySet = Splayset.empty tigergraph.cmp
 
 (*Conjuntos de nodos*)
-val precolored : nodeset = Hashset.empty(Hashset.hash,tigergraph.eq) 
-val initial : nodeSet = Hashset.empty(Hashset.hash,tigergraph.eq) 
+val precolored
+val initial 
 val simplifyWorklist : nodeSet = Hashset.empty(Hashset.hash,tigergraph.eq) 
 val freezeWorklist : nodeSet = Hashset.empty(Hashset.hash,tigergraph.eq) 
 val spillWorklist : nodeSet = Hashset.empty(Hashset.hash,tigergraph.eq) 
@@ -140,29 +141,15 @@ fun AddWorkList(u) =
  
 fun OKheur t r =  (Polyhash.find(degree,t) < KCONST) orelse Hashset.member(precolored,t) orelse Hashset.member(adjSet,(t,r))    
 
-
-
-
 fun bigDegree n = length (adj n) > 10
 
 fun nodelist2set l = Hashset.addList(Hashset.empty(Hashset.hash,tigergraph.eq), l)
 
 (* agregamos nodos a las listas, ojo, como agregamos precolored ?? *)
-fun initWorkLists (IGRAPH{graph, gnode, gtemp, moves})  = 
-let
-	val precoloredList = ["r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", 
-					   "r9", "r10", "r11", "r12", "r13", "r14", "r15"] 
+fun initWorkLists (IGRAPH{graph, tnode, gtemp, moves})  = 
 	
-	
-	fun selectwl node = 
-		if (bigDegree node) then 
-			HashSet.insert (spillWorkList, node) 
-		else if (MoveRelated n) then 
-			HashSet.insert (freezeWorkList, node)
-		else
-			HashSet.insert (simplifyWorkList, node)
+wlet
 in
-	
 	List.app selectwl (nodes igraph)  
 end
 	
