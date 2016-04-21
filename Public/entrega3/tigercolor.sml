@@ -14,14 +14,11 @@ fun moveeq  ((a,b),(c,d)) = (tigergraph.eq(a,c)) andalso (tigergraph.eq(b,d))
 fun movecmp ((a,b),(c,d)) = case tigergraph.cmp(a,c) of EQUAL => tigergraph.cmp(b,d)
                                                       |   x   => x
 
-
 val emptySet : nodeSet = tigerset.newEmpty tigergraph.cmp
-
 
 (*Conjuntos de nodos*)
 val precolored : nodeSet = tigerset.newEmpty tigergraph.cmp
 val initial : nodeSet = tigerset.newEmpty tigergraph.cmp
-
 
 type allocation = (tigertemp.temp, tigerframe.register) Polyhash.hash_table
 
@@ -46,9 +43,9 @@ val coalescedMoves : moveSet = tigerset.empty(tigerset.hash,moveeq)
 val degree : (tigergraph.node,int) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,tigerset.NotFound) 
 
 (* Asegurarse que si (u,v) esta acá tmb está (v,u)*)
-val adjSet : (node * node) tigerset.set = tigerset.newEmpty(moveeq)
+val adjSet : (node * node) tigerset.set = tigerset.newEmpty movecmp
 
-val adj_tbl : (tigergraph.node,nodeset) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,tigerset.NotFound) 
+val adj_tbl : (tigergraph.node,nodeSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,tigerset.NotFound) 
 (*
 val moveList : (tigergraph.node,moveSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
 val alias : (node,node) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
@@ -162,11 +159,11 @@ let
 
     fun addEdges node = 
     let
-        val scc = succ node
-        val edges = filter (fn x => not (member (precolored, x))) (adj node)
+        val scc = tigergraph.succ node
+        val edges = List.filter (fn x => not (member (precolored, x))) (tigergraph.adj node)
     in
-        Polyhash.insert(adj_tbl, nodelist2set edges);
-        Polyhash.insert(degree, length edges);
+        Polyhash.insert(adj_tbl, (node,nodelist2set edges));
+        Polyhash.insert(degree, (node,length edges));
         List.app (fn x => tigerset.addList(adjSet, [(x, node),(node,x)])) scc
     end
     fun peekorempty t n = case tigerset.peek(t,n) of
