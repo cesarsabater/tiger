@@ -3,15 +3,17 @@ struct
 
 open tigerpila
 open tigerliveness
+open tigerset
 
 type node = tigregraph.node
 type move = (tigergraph.node * tigergraph.node)
-type nodeSet = node tigerset.set
-type moveSet = move tigerset.set
+type nodeSet = node set
+type moveSet = move set
 
-fun moveeq ((a,b),(c,d)) = (tigergraph.eq(a,c)) andalso (tigergraph.eq(b,d))
+fun moveeq  ((a,b),(c,d)) = (tigergraph.eq(a,c)) andalso (tigergraph.eq(b,d))
+fun movecmp ((a,b),(c,d)) = case tigergraph.cmp(a,c) of EQUAL => tigergraph.cmp(b,d)
+                                                      |   x   => x
 
-val emptySet : nodeSet = tigerset.empty(tigerset.hash,tigergraph.eq)
 val emptySplaySet = Splayset.empty tigergraph.cmp
 
 (*Conjuntos de nodos*)
