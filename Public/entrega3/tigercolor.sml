@@ -4,20 +4,24 @@ struct
 open tigerpila
 open tigerliveness
 
-type node = tigregraph.node
+type node = tigergraph.node
 type move = (tigergraph.node * tigergraph.node)
 type nodeSet = node tigerset.set
 type moveSet = move tigerset.set
 
 fun moveeq ((a,b),(c,d)) = (tigergraph.eq(a,c)) andalso (tigergraph.eq(b,d))
 
-val emptySet : nodeSet = tigerset.empty(tigerset.hash,tigergraph.eq)
-val emptySplaySet = Splayset.empty tigergraph.cmp
+val emptySet : nodeSet = tigerset.newEmpty tigergraph.cmp
 
 (*Conjuntos de nodos*)
-val precolored : nodeSet = tigerset.empty(tigerset.hash,tigergraph.eq)
-val initial : nodeSet : tigerset.empty(tigerset.hash,tigergraph.eq)
- 
+val precolored : nodeSet = tigerset.newEmpty tigergraph.cmp
+val initial : nodeSet = tigerset.newEmpty tigergraph.cmp
+
+
+type allocation = (tigertemp.temp, tigerframe.register) Polyhash.hash_table
+
+
+
 (*
 val simplifyWorklist : nodeSet = tigerset.empty(tigerset.hash,tigergraph.eq) 
 val freezeWorklist : nodeSet = tigerset.empty(tigerset.hash,tigergraph.eq) 
@@ -146,7 +150,7 @@ fun AddWorkList(u) =
 fun OKheur t r =  (Polyhash.find(degree,t) < KCONST) orelse tigerset.member(precolored,t) orelse tigerset.member(adjSet,(t,r))    
 *)
 
-fun nodelist2set l = tigerset.addList(tigerset.empty(tigerset.hash,tigergraph.eq), l)
+fun nodelist2set l = tigerset.addList((tigerset.newEmpty tigergraph.cmp), l)
 
 fun initialize (IGRAPH{graph, tnode, gtemp, moves})  = 
 let
@@ -176,12 +180,12 @@ let
     end
 *)
     
-    val precoloredList = Splaymap.listItems(tigerliveness.getPrecoloredNodes())
+    val precoloredList = Splayset.listItems(tigerliveness.getPrecoloredNodes())
 in
     (* precolored *)
 	tigerset.addList(precolored, precoloredList);
     (* initial *)
-    tigerset.addList(initial, nodes graph);
+    tigerset.addList(initial, tigergraph.nodes graph);
     List.app (fn x => tigerset.delete(initial, x)) precoloredList
     (* add_tbl (adjList), adjSet y degree *)
 (*
@@ -195,6 +199,7 @@ end
 
 
 (* mandamos cada nodo a su worklist *) 
+(*
 fun selectWL node = 
 let
     val deg = Polyhash.find(degree, node)
@@ -207,6 +212,7 @@ in
 end
 
 fun makeWorklist () = tigerset.app selectWL initial
+*)
 
 fun main igraph = initialize igraph 
 
