@@ -33,6 +33,6 @@ struct
  fun union (a,b) = ref (Splayset.union(!a,!b))
  fun intersection(a,b) = ref (Splayset.intersection(!a,!b))
  fun difference(a,b) = ref (Splayset.difference(!a,!b))
-  
+ fun numItems s = Splayset.numItems(!s)
  
 end

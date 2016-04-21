@@ -22,5 +22,6 @@ sig
   val fold         : ('_item * 'b -> 'b) -> 'b -> '_item set -> 'b
   val all          : ('_item -> bool) -> '_item set -> bool
   val exists       : ('_item -> bool) -> '_item set -> bool
+  val numItems     : ('item set) -> int
   
 end
