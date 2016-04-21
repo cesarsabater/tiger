@@ -1,7 +1,7 @@
 signature tigercolor = 
 sig
 
-    type allocation = (tigertemp.temp, tigerframe.register) Splaymap.dict
+    type allocation = (tigertemp.temp, tigerframe.register) Polyhash.hash_table
 
 	val color : { interference : tigerliveness.igraph,
 				  initial: allocation, 
