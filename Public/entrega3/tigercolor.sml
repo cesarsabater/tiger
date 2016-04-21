@@ -35,14 +35,14 @@ val coloredNodes     : nodeSet = tigerset.newEmpty(tigergraph.cmp)
 (*Pila*)
 val selectStack      : tigergraph.node Pila = nuevaPila()
 
-(*
-(*Conjuntos de moves*)
-val worklistMoves : moveSet = tigerset.empty(tigerset.hash,moveeq)
-val activeMoves : moveSet = tigerset.empty(tigerset.hash,moveeq)
-val frozenMoves : moveSet = tigerset.empty(tigerset.hash,moveeq) 
-val constrainedMoves : moveSet = tigerset.empty(tigerset.hash,moveeq)
-val coalescedMoves : moveSet = tigerset.empty(tigerset.hash,moveeq)
 
+(*Conjuntos de moves*)
+val worklistMoves    : moveSet = tigerset.newEmpty(movecmp)
+val activeMoves      : moveSet = tigerset.newEmpty(movecmp)
+val frozenMoves      : moveSet = tigerset.newEmpty(movecmp)
+val constrainedMoves : moveSet = tigerset.newEmpty(movecmp)
+val coalescedMoves   : moveSet = tigerset.newEmpty(movecmp)
+(*
 val degree : (tigergraph.node,int) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound) 
 
 (* Asegurarse que si (u,v) esta acá tmb está (v,u)*)
