@@ -18,24 +18,24 @@ fun movecmp ((a,b),(c,d)) = case tigergraph.cmp(a,c) of EQUAL => tigergraph.cmp(
 val emptySet : nodeSet = tigerset.newEmpty tigergraph.cmp
 
 
-(*Conjuntos de nodos*)
-val precolored : nodeSet = tigerset.newEmpty tigergraph.cmp
-val initial : nodeSet = tigerset.newEmpty tigergraph.cmp
+
 
 
 type allocation = (tigertemp.temp, tigerframe.register) Polyhash.hash_table
 
-
+(*Conjuntos de nodos*)
+val precolored       : nodeSet = tigerset.newEmpty tigergraph.cmp
+val initial          : nodeSet = tigerset.newEmpty tigergraph.cmp
+val simplifyWorklist : nodeSet = tigerset.newEmpty(tigergraph.cmp) 
+val freezeWorklist   : nodeSet = tigerset.newEmpty(tigergraph.cmp)
+val spillWorklist    : nodeSet = tigerset.newEmpty(tigergraph.cmp)
+val spilledNodes     : nodeSet = tigerset.newEmpty(tigergraph.cmp)
+val coalescedNodes   : nodeSet = tigerset.newEmpty(tigergraph.cmp)
+val coloredNodes     : nodeSet = tigerset.newEmpty(tigergraph.cmp) 
+(*Pila*)
+val selectStack      : tigergraph.node Pila = nuevaPila()
 
 (*
-val simplifyWorklist : nodeSet = tigerset.empty(tigerset.hash,tigergraph.eq) 
-val freezeWorklist : nodeSet = tigerset.empty(tigerset.hash,tigergraph.eq) 
-val spillWorklist : nodeSet = tigerset.empty(tigerset.hash,tigergraph.eq) 
-val spilledNodes : nodeSet = tigerset.empty(tigerset.hash,tigergraph.eq) 
-val coalescedNodes : nodeSet = tigerset.empty(tigerset.hash,tigergraph.eq) 
-val coloredNodes : nodeSet = tigerset.empty(tigerset.hash,tigergraph.eq) 
-val selectStack : tigergraph.node Pila = nuevaPila()
-
 (*Conjuntos de moves*)
 val worklistMoves : moveSet = tigerset.empty(tigerset.hash,moveeq)
 val activeMoves : moveSet = tigerset.empty(tigerset.hash,moveeq)
