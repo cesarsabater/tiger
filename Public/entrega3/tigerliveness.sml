@@ -161,7 +161,5 @@ fun show (IGRAPH{graph, gtemp, ...}) = tigergraph.printGraphWithNaming graph gte
 
 fun getPrecoloredNodes () = !precoloredNodes
 
-
 (**-------------------------------*)
-
 end
