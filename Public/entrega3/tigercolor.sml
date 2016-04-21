@@ -20,8 +20,6 @@ val initial : nodeSet = tigerset.newEmpty tigergraph.cmp
 
 type allocation = (tigertemp.temp, tigerframe.register) Polyhash.hash_table
 
-
-
 (*
 val simplifyWorklist : nodeSet = tigerset.empty(tigerset.hash,tigergraph.eq) 
 val freezeWorklist : nodeSet = tigerset.empty(tigerset.hash,tigergraph.eq) 
@@ -37,14 +35,16 @@ val activeMoves : moveSet = tigerset.empty(tigerset.hash,moveeq)
 val frozenMoves : moveSet = tigerset.empty(tigerset.hash,moveeq) 
 val constrainedMoves : moveSet = tigerset.empty(tigerset.hash,moveeq)
 val coalescedMoves : moveSet = tigerset.empty(tigerset.hash,moveeq)
+*)
 
-val degree : (tigergraph.node,int) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound) 
+
+val degree : (tigergraph.node,int) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,tigerset.NotFound) 
 
 (* Asegurarse que si (u,v) esta acá tmb está (v,u)*)
-val adjSet : (node * node) tigerset.set = tigerset.empty(tigerset.hash,moveeq)
+val adjSet : (node * node) tigerset.set = tigerset.newEmpty(moveeq)
 
-val adj_tbl : (tigergraph.node,nodeset) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound) 
-
+val adj_tbl : (tigergraph.node,nodeset) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,tigerset.NotFound) 
+(*
 val moveList : (tigergraph.node,moveSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
 val alias : (node,node) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
 (* revisar tipo de color *)
@@ -154,7 +154,7 @@ fun nodelist2set l = tigerset.addList((tigerset.newEmpty tigergraph.cmp), l)
 
 fun initialize (IGRAPH{graph, tnode, gtemp, moves})  = 
 let
-(*
+
     fun addEdges node = 
     let
         val scc = succ node
@@ -167,6 +167,8 @@ let
     fun peekorempty t n = case tigerset.peek(t,n) of
                             SOME s => s
                             | NONE => tigerset.empty(tigerset.hash, moveeq) 
+    
+(*    
     fun addMoves (d,s) = 
     let
         val movelistd = (peekorempty moveList d) 
@@ -188,9 +190,7 @@ in
     tigerset.addList(initial, tigergraph.nodes graph);
     List.app (fn x => tigerset.delete(initial, x)) precoloredList
     (* add_tbl (adjList), adjSet y degree *)
-(*
     List.app addEdges (nodes graph)
-*)
     (* moveList y workListmoves *) 
 (*
     List.app addMoves moves
