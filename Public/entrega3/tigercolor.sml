@@ -59,26 +59,32 @@ val frozenMoves      : moveSet = tigerset.newEmpty(movecmp)
 val constrainedMoves : moveSet = tigerset.newEmpty(movecmp)
 val coalescedMoves   : moveSet = tigerset.newEmpty(movecmp)
 
+exception ErrorDegree
+exception ErrorAdjList
+exception ErrorMoveList
+exception ErrorAlias
+exception ErrorColor
+exception ErrorCount
 
-val degree : (node,int) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,tigerset.NotFound) 
+val degree : (node,int) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,ErrorDegree) 
 
 (* Asegurarse que si (u,v) esta acá tmb está (v,u)*)
 val adjSet : (node * node) tigerset.set = tigerset.newEmpty movecmp
 
-val adjList : (node,nodeSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,tigerset.NotFound) 
+val adjList : (node,nodeSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,ErrorAdjList) 
 
-val moveList : (node,moveSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,NotFound)
+val moveList : (node,moveSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,ErrorMoveList)
 
-val alias : (node,node) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,NotFound)
+val alias : (node,node) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,ErrorAlias)
 (*
 
 (* revisar tipo de color *)
 val nodeColor : (node,tigertemp.temp) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,NotFound)
 *)
 
-val color : (node,tigertemp.temp) Polyhash.hash_table = Polyhash.mkTable(Polyhash.hash,nodeeq) (1000,NotFound)
+val color : (node,tigertemp.temp) Polyhash.hash_table = Polyhash.mkTable(Polyhash.hash,nodeeq) (1000,ErrorColor)
 
-val usedefcount : (node,int) Polyhash.hash_table = Polyhash.mkTable(Polyhash.hash,nodeeq) (1000,NotFound)
+val usedefcount : (node,int) Polyhash.hash_table = Polyhash.mkTable(Polyhash.hash,nodeeq) (1000,ErrorCount)
 
 
 
@@ -421,15 +427,17 @@ let
 		initial := !(difference(initial, precolored))
 	end
 	
-	fun Loop() =  
-	           if notEmpty(simplifyWorklist) then (Simplify() ; Loop())
+	fun Loop() = let val _ = print "loop\n" in  
+	           (if notEmpty(simplifyWorklist) then (Simplify() ; Loop())
              else if notEmpty(worklistMoves) then (Coalesce() ; Loop())
              else if notEmpty(freezeWorklist) then (Freeze() ; Loop())
              else if notEmpty(spillWorklist) then (SelectSpill(); Loop())
-             else ()
+             else ())	
+    end
 
 	fun printWL wl = 
 		List.app (fn tmp => print (tmp^"\n")) (listItems wl)
+	
 in
 	Build () ; 
 	print "\n\ninitials:\n" ;

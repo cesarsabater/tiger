@@ -2,7 +2,7 @@ signature tigerset =
 sig
    type 'item set = 'item Splayset.set ref
   
-  exception NotFound
+  exception NoEncontrado
 
   val newEmpty        : ('_item * '_item -> order) -> '_item set
   val add          : '_item set * '_item -> unit
