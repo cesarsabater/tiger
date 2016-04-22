@@ -413,7 +413,6 @@ let
 		end	
 	in  
 		List.app procInstr (rev (tigergraph.nodes control)); (*app aplica de izquierda a derecha entonces funca*)
-		print "5!\n";
 		initial := !(difference(initial, precolored))
 	end
 	
@@ -421,14 +420,15 @@ let
              else if notEmpty(worklistMoves) then (Coalesce() ; Loop())
              else if notEmpty(freezeWorklist) then (Freeze() ; Loop())
              else if notEmpty(spillWorklist) then (SelectSpill(); Loop())
-             else ()	
-
-	
+             else ()
+      
 in
 	Build () ;
-	MakeWorklist () ;
-	Loop() ;
+
+	MakeWorklist ()
+(*	Loop() ;
 	AssignColors()
+*)
 end
 	
 end

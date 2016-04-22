@@ -66,7 +66,6 @@ fun main(args) =
         val _ = tigercolor.main liveout (flowgraph,ilist)
         
 	in
-		
 		print "yes!!\n"
 		
 	end	handle Fail s => print("Fail: "^s^"\n")
