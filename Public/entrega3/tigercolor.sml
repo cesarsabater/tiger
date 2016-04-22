@@ -120,6 +120,11 @@ end
 
 fun findinitI ht i = case Polyhash.peekInsert ht (i,0) of SOME n => n
                                                          |  NONE => 0
+                                                         
+fun findinitMS ht i = let val ne : moveSet = newEmpty(movecmp) in 
+      case Polyhash.peekInsert ht (i,ne) of SOME s => s
+                                           | NONE => ne  
+end                                                         
                                                        
 fun AddEdge(u,v) =
    if not(member(adjSet,(u,v))) andalso not(nodeeq(u,v)) then (
@@ -134,7 +139,7 @@ fun AddEdge(u,v) =
       
 
 fun NodeMoves(n) = 
-     intersection((Polyhash.find moveList n),union(activeMoves,worklistMoves)) 
+     intersection((findinitMS moveList n),union(activeMoves,worklistMoves)) 
 
 fun MoveRelated(n) = not(isEmpty(NodeMoves(n)))
 
@@ -356,7 +361,7 @@ fun MakeWorklist () =
 let
 	fun selectWL tmp = 
 	let
-		val deg = Polyhash.find degree tmp
+		val deg = findinitI degree tmp
 	in
 		if deg >= KCONST
 		then tigerset.add(spillWorklist, tmp)
@@ -416,19 +421,19 @@ let
 		initial := !(difference(initial, precolored))
 	end
 	
-	fun Loop() = if notEmpty(simplifyWorklist) then (Simplify() ; Loop())
+	fun Loop() =  
+	           if notEmpty(simplifyWorklist) then (Simplify() ; Loop())
              else if notEmpty(worklistMoves) then (Coalesce() ; Loop())
              else if notEmpty(freezeWorklist) then (Freeze() ; Loop())
              else if notEmpty(spillWorklist) then (SelectSpill(); Loop())
              else ()
       
 in
-	Build () ;
+	Build () ; 
+	MakeWorklist ()  ;
+	Loop()(* ;
+	AssignColors() *)
 
-	MakeWorklist ()
-(*	Loop() ;
-	AssignColors()
-*)
 end
 	
 end
