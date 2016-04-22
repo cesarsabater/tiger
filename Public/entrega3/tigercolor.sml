@@ -425,11 +425,5 @@ in
 	AssignColors()
 end
 	
-fun initHashTable table list iv = 
-	List.app (fn el => Polyhash.insert table (el, iv())) list
-
-	
-
-
 end
 
