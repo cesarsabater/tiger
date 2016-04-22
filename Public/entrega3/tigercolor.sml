@@ -410,17 +410,26 @@ let
 		print "5!\n";
 		initial := !(difference(initial, precolored))
 	end
+	
+	fun Loop() = if notEmpty(simplifyWorklist) then (Simplify() ; Loop())
+             else if notEmpty(worklistMoves) then (Coalesce() ; Loop())
+             else if notEmpty(freezeWorklist) then (Freeze() ; Loop())
+             else if notEmpty(spillWorklist) then (SelectSpill(); Loop())
+             else ()	
+
+	
 in
 	Build () ;
-	print "6!\n"
-(*
-	; 
-	MakeWorklist ()
-*)
+	MakeWorklist () ;
+	Loop() ;
+	AssignColors()
 end
 	
 fun initHashTable table list iv = 
 	List.app (fn el => Polyhash.insert table (el, iv())) list
+
+	
+
 
 end
 

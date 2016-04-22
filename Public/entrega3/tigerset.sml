@@ -16,6 +16,7 @@ struct
  fun member (s,a) = Splayset.member(!s,a)
  
  fun isEmpty (s) = Splayset.isEmpty(!s)
+ fun notEmpty (s) = not(Splayset.isEmpty(!s))
  
  fun unElem s = let val x = Splayset.find ( fn _ => true) (!s)
    in

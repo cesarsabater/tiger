@@ -10,6 +10,7 @@ sig
   val member       : 'item set * 'item -> bool
   val delete       : '_item set * '_item -> unit
   val isEmpty      : 'item set -> bool
+  val notEmpty     : 'item set -> bool
   val unElem       : 'item set -> 'item
   
   val union        : '_item set * '_item set -> '_item set 
