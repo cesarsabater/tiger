@@ -3,7 +3,7 @@ struct
  type 'a set = 'a Splayset.set ref
  
  
- exception NotFound
+ exception NoEncontrado
  
  fun newEmpty f = ref (Splayset.empty f)
  
@@ -21,7 +21,7 @@ struct
  fun unElem s = let val x = Splayset.find ( fn _ => true) (!s)
    in
       case x of SOME i => i
-              | NONE   =>  raise (NotFound)                 
+              | NONE   =>  raise (NoEncontrado)                 
  end
  
  fun app b s = Splayset.app b (!s)
