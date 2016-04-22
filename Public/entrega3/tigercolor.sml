@@ -88,13 +88,14 @@ val color : (node,tigertemp.temp) Polyhash.hash_table = Polyhash.mkTable(Polyhas
 
 val usedefcount : (node,int) Polyhash.hash_table = Polyhash.mkTable(Polyhash.hash,nodeeq) (1000,ErrorCount)
 
+fun debugfind ht i = case Polyhash.peek ht i of SOME d => d
+                                             |  NONE => (print i ; Polyhash.find ht i) 
 
+fun adjacent (v) = difference(debugfind adjList v,union(selectStack,coalescedNodes)) 
 
-fun adjacent (v) = difference(Polyhash.find adjList v,union(selectStack,coalescedNodes)) 
+fun adj_app v p = tigerset.app (fn x => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then p x else ()) (debugfind adjList v)  
 
-fun adj_app v p = tigerset.app (fn x => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then p x else ()) (Polyhash.find adjList v)  
-
-fun adj_fold v f e = tigerset.fold (fn (x,b) => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then f(x,b) else b) e (Polyhash.find adjList v)
+fun adj_fold v f e = tigerset.fold (fn (x,b) => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then f(x,b) else b) e (debugfind adjList v)
 
 
 
