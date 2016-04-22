@@ -5,6 +5,8 @@ open tigerpila
 open tigerliveness
 open tigerset
 
+val KCONST = List.length(tigerframe.usable)
+
 type node = tigergraph.node
 type move = (tigergraph.node * tigergraph.node)
 type nodeSet = node set
@@ -52,8 +54,9 @@ val adjSet : (node * node) tigerset.set = tigerset.newEmpty movecmp
 val adj_tbl : (tigergraph.node,nodeSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,tigerset.NotFound) 
 
 
-(*
+
 val moveList : (tigergraph.node,moveSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
+(*
 val alias : (node,node) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
 (* revisar tipo de color *)
 val nodeColor : (node,tigertemp.temp) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
@@ -80,77 +83,75 @@ fun intersect a b =
   end
   
 *)
-(*
-fun Simplify () = let val v = tigerset.unElem(simplifyWorklist) 
-  in
-     push v ;
-     tigerset.delete simplifyWorklist v;    
-     adj_app v DecrementDegree
-  end
- *)   
-(*
+
+
+	
 
 fun NodeMoves(n) = 
-  let c = tigerset.empty(tigerset.hash,tigergraph.eq) in
-     tigerset.app (fun x => if (tigerset.member(activeMoves,x) orelse tigerset.member(worklistMoves,x)) 
-                           then tigerset.add(c,x) else ()) (Polyhash.find moveList n) ;
-     c
-  end                         
+     intersection((Polyhash.find moveList n),union(activeMoves,worklistMoves)) 
+
+fun MoveRelated(n) = not(isEmpty(NodeMoves(n)))
 
 fun EnableMoves n =
    let fun body m = 
       if tigerset.member(activeMoves,m) then
-         tigerset.delete(activeMoves,m) ;
-         tigerset.add(worklistMoves,m)
+         (tigerset.delete(activeMoves,m) ;
+         tigerset.add(worklistMoves,m)   )
       else   
          ()
    in           
-     tigerset.app body NodeMoves(n)
+     tigerset.app body (NodeMoves(n))
    end
+
 
 fun DecrementDegree m  = 
    let val d = (Polyhash.find degree m) in
      Polyhash.insert degree (m,d-1) ;
      if d = KCONST then (
-       tigerset.app (fun x => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then EnableMoves x else ())
-                    adjacent(m) ; EnableMoves m ;
+       adj_app m EnableMoves ; 
+       EnableMoves m ;
        tigerset.delete (spillWorklist,m) ;
-       if Moverelated(m) then
-          tigerset.add (freezeWorklist,m)  ;
+       if MoveRelated(m) then
+          tigerset.add (freezeWorklist,m)
        else
-          tigerset.add (simplifyWorklist,m);   
+          tigerset.add (simplifyWorklist,m)   
      ) else ()
    
    
    end
- 
-fun Coalesce () =
-   let fun body (x,y) = 
      
-     let fun process (u,v) =
-       
-       if (u = v) then (
-          tigerset.add(coalescedMoves,(x,y)) ;
-          AddWorkList(u)
-       ) else if (tigerset.member(precolored,v) orelse tigerset.member(adjSet,(u,v))) then (
-          tigerset.add(constrainedMoves,(x,y)) ;
-          AddWorkList(u) ;
-          AddWorkList(v) 
-       ) else if (tigerset.member(precolored,u) andalso condition1 (u,v) ) orelse (not(tigerset.member(precolored,u)) andalso condition2(u,v) ) then (
-          tigerset.add(coalescedMoves,(x,y)) ;
-          Combine(u,v) ;
-          AddWorkList(u);
-       ) else  
-          tigerset.add(activeMoves,(x,y)) ;
-     in
-       tigerset.delete(workListMoves,(x,y)) ;
-       if tigerset.member(precolored,y) then process(y,x) else process (x,y) 
-               
-     end  
-   in
-     tigerset.app body worklistMoves
-   end 
 
+
+   
+fun Simplify () = let val v = tigerset.unElem(simplifyWorklist) 
+  in
+     push v ;
+     tigerset.delete (simplifyWorklist,v);    
+     adj_app v DecrementDegree
+  end      
+ (*
+fun Coalesce () = let val (x,y) = Hashset.unelem(worklistMoves) 
+                      val (x',y') = (GetAlias(x),GetAlias(y))
+                      val (u,v) = if Hashset.member(precolored,y') then (y',x') else (x',y') 
+   in
+      
+      Hashset.delete(workListMoves,(x,y)) ;
+      if tigergraph.eq(u,v) then ( (* u = v *)
+         Hashset.add(coalescedMoves,(x,y)) ;
+         AddWorkList(u)
+      ) else if (Hashset.member(precolored,v) orelse Hashset.member(adjSet,(u,v))) then (
+         Hashset.add(constrainedMoves,(x,y)) ;
+         AddWorkList(u) ;
+         AddWorkList(v) 
+      ) else if (Hashset.member(precolored,u) andalso condition1 (u,v) ) orelse (not(Hashset.member(precolored,u)) andalso condition2(u,v) ) then (
+         Hashset.add(coalescedMoves,(x,y)) ;
+         Combine(u,v) ;
+         AddWorkList(u);
+      ) else  
+         Hashset.add(activeMoves,(x,y)) 
+ 
+   end       
+               
 
 fun condition1 (u,v) =
                         
