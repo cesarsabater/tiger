@@ -409,11 +409,21 @@ let
 		List.app procInstr (rev ilist); (*app aplica de izquierda a derecha entonces funca*)
 		initial := !(difference(initial, precolored))
 	end
+	
+	fun Loop() = if notEmpty(simplifyWorklist) then (Simplify() ; Loop())
+             else if notEmpty(worklistMoves) then (Coalesce() ; Loop())
+             else if notEmpty(freezeWorklist) then (Freeze() ; Loop())
+             else if notEmpty(spillWorklist) then (SelectSpill(); Loop())
+             else ()	
+
+	
 in
 	Build () ; 
-	MakeWorklist ()
+	MakeWorklist () ;
+	Loop() ;
+	AssignColors()
 end
-	
+
 
 end
 
