@@ -111,15 +111,23 @@ fun intersect a b =
   
 *)
 
+fun findinitNS ht i = let val ne : nodeSet = newEmpty(nodecmp) in 
+     case Polyhash.peekInsert ht (i,ne) of SOME s => s
+                                         | NONE => ne  
+end
+
+fun findinitI ht i = case Polyhash.peekInsert ht (i,0) of SOME n => n
+                                                         |  NONE => 0
+                                                       
 fun AddEdge(u,v) =
    if not(member(adjSet,(u,v))) andalso not(nodeeq(u,v)) then (
       addList(adjSet,[(u,v),(v,u)]) ; (
       if not(member(precolored,u)) then (
-         add(Polyhash.find adjList u,v) ;
-         Polyhash.insert degree (u,((Polyhash.find degree u)+ 1))) else () ;
+         add(findinitNS adjList u,v) ;
+         Polyhash.insert degree (u,((findinitI degree u)+ 1))) else () ;
       if not(member(precolored,v)) then (
-         add(Polyhash.find adjList v,u) ;
-         Polyhash.insert degree (v,(Polyhash.find degree v)+1)) else ())
+         add(findinitNS adjList v,u) ;
+         Polyhash.insert degree (v,(findinitI degree v)+1)) else ())
    ) else ()        
       
 	

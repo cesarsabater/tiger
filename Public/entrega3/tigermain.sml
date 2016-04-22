@@ -52,7 +52,7 @@ fun main(args) =
 		val instructions = geninstr canonfmts
 		val _ = printCode instructions
 		
-        val (flowgraph, _) = tigerflow.instrs2graph instructions
+        val (flowgraph, ilist) = tigerflow.instrs2graph instructions
 		val tigerflow.FGRAPH{control = cgraph, ...} = flowgraph 
 		val _ = tigergraph.printGraph  cgraph
 		
@@ -63,6 +63,7 @@ fun main(args) =
 		val _ = print "Grafo de Interferencia\n"
         val _ = tigerliveness.show igraph
         
+        val _ = tigercolor.main liveout (flowgraph,ilist)
 (*
         val _ = tigercolor.main liveout flowgraph
 *)
