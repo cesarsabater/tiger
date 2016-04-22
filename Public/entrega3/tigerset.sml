@@ -2,6 +2,7 @@ structure tigerset :> tigerset =
 struct
  type 'a set = 'a Splayset.set ref
  
+ 
  exception NotFound
  
  fun newEmpty f = ref (Splayset.empty f)

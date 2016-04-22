@@ -32,9 +32,9 @@ val spillWorklist    : nodeSet = tigerset.newEmpty(tigergraph.cmp)
 val spilledNodes     : nodeSet = tigerset.newEmpty(tigergraph.cmp)
 val coalescedNodes   : nodeSet = tigerset.newEmpty(tigergraph.cmp)
 val coloredNodes     : nodeSet = tigerset.newEmpty(tigergraph.cmp) 
-(*Pila*)
-val selectStack      : tigergraph.node Pila = nuevaPila()
-
+(*Pila y conjunto*)
+val selectStack      : nodeSet = tigerset.newEmpty(tigergraph.cmp)
+val selectPila       : tigergraph.node Pila = nuevaPila()
 
 (*Conjuntos de moves*)
 val worklistMoves    : moveSet = tigerset.newEmpty(movecmp)
@@ -42,21 +42,37 @@ val activeMoves      : moveSet = tigerset.newEmpty(movecmp)
 val frozenMoves      : moveSet = tigerset.newEmpty(movecmp)
 val constrainedMoves : moveSet = tigerset.newEmpty(movecmp)
 val coalescedMoves   : moveSet = tigerset.newEmpty(movecmp)
-(*
+
 val degree : (tigergraph.node,int) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound) 
 
+
+(*
 (* Asegurarse que si (u,v) esta acá tmb está (v,u)*)
 val adjSet : (node * node) tigerset.set = tigerset.empty(tigerset.hash,moveeq)
+*)
+val adj_tbl : (tigergraph.node,nodeSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound) 
 
-val adj_tbl : (tigergraph.node,nodeset) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound) 
 
+(*
 val moveList : (tigergraph.node,moveSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
 val alias : (node,node) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
 (* revisar tipo de color *)
 val nodeColor : (node,tigertemp.temp) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
+*)
 
-fun adjacent (v) = (Polyhash.find adj_tbl v)  
+fun adjacent (v) = difference(Polyhash.find adj_tbl v,union(selectStack,coalescedNodes)) 
 
+fun adj_app v p = tigerset.app (fn x => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then p x else ()) (Polyhash.find adj_tbl v)  
+
+fun push v = (pushPila selectPila v ; tigerset.add (selectStack,v))
+             
+fun pop() = let val n = topPila(selectPila)
+ in
+   popPila(selectPila) ;
+   delete(selectStack,n) ;
+   n             
+end
+(*
 fun intersect a b = 
   let c = tigerset.empty(tigerset.hash,tigergraph.eq) in
      
@@ -64,16 +80,16 @@ fun intersect a b =
   
   end
   
-
-fun Simplify () =
-  
-  let fun body v = push selectStack v ;
-                   tigerset.delete simplifyWorklist v;    
-                   tigerset.app DecrementDegree adjacent(v)
+*)
+(*
+fun Simplify () = let val v = tigerset.unElem(simplifyWorklist) 
   in
-     tigerset.app body simplifyWorklist                
-    
-  end  
+     push v ;
+     tigerset.delete simplifyWorklist v;    
+     adj_app v DecrementDegree
+  end
+ *)   
+(*
 
 fun NodeMoves(n) = 
   let c = tigerset.empty(tigerset.hash,tigergraph.eq) in
