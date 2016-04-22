@@ -7,36 +7,39 @@ open tigerset
 
 val KCONST = List.length(tigerframe.usable)
 
-type node = tigergraph.node
-type move = (tigergraph.node * tigergraph.node)
+type node = tigertemp.temp
+type move = (node * node)
 type nodeSet = node set
 type moveSet = move set
 
-fun moveeq  ((a,b),(c,d)) = (tigergraph.eq(a,c)) andalso (tigergraph.eq(b,d))
-fun movecmp ((a,b),(c,d)) = case tigergraph.cmp(a,c) of EQUAL => tigergraph.cmp(b,d)
-                                                      |   x   => x
+fun nodeeq (a,b) = (String.compare(a,b) = EQUAL)
+fun nodecmp (a,b) = String.compare(a,b)
 
-val emptySet : nodeSet = tigerset.newEmpty tigergraph.cmp
+fun moveeq  ((a,b),(c,d)) = nodeeq(a,c) andalso nodeeq(b,d)
+fun movecmp ((a,b),(c,d)) = case nodecmp(a,c) of EQUAL => nodecmp(b,d)
+                                                       |   x   => x
+
+val emptySet : nodeSet = tigerset.newEmpty nodecmp
 
 (*Conjuntos de nodos*)
-val precolored : nodeSet = tigerset.newEmpty tigergraph.cmp
-val initial : nodeSet = tigerset.newEmpty tigergraph.cmp
+val precolored : nodeSet = tigerset.newEmpty nodecmp
+val initial : nodeSet = tigerset.newEmpty nodecmp
 
 type allocation = (tigertemp.temp, tigerframe.register) Polyhash.hash_table
 
 
 (*Conjuntos de nodos*)
-val precolored       : nodeSet = tigerset.newEmpty tigergraph.cmp
-val initial          : nodeSet = tigerset.newEmpty tigergraph.cmp
-val simplifyWorklist : nodeSet = tigerset.newEmpty(tigergraph.cmp) 
-val freezeWorklist   : nodeSet = tigerset.newEmpty(tigergraph.cmp)
-val spillWorklist    : nodeSet = tigerset.newEmpty(tigergraph.cmp)
-val spilledNodes     : nodeSet = tigerset.newEmpty(tigergraph.cmp)
-val coalescedNodes   : nodeSet = tigerset.newEmpty(tigergraph.cmp)
-val coloredNodes     : nodeSet = tigerset.newEmpty(tigergraph.cmp) 
+val precolored       : nodeSet = tigerset.newEmpty nodecmp
+val initial          : nodeSet = tigerset.newEmpty nodecmp
+val simplifyWorklist : nodeSet = tigerset.newEmpty(nodecmp) 
+val freezeWorklist   : nodeSet = tigerset.newEmpty(nodecmp)
+val spillWorklist    : nodeSet = tigerset.newEmpty(nodecmp)
+val spilledNodes     : nodeSet = tigerset.newEmpty(nodecmp)
+val coalescedNodes   : nodeSet = tigerset.newEmpty(nodecmp)
+val coloredNodes     : nodeSet = tigerset.newEmpty(nodecmp) 
 (*Pila y conjunto*)
-val selectStack      : nodeSet = tigerset.newEmpty(tigergraph.cmp)
-val selectPila       : tigergraph.node Pila = nuevaPila()
+val selectStack      : nodeSet = tigerset.newEmpty(nodecmp)
+val selectPila       : node Pila = nuevaPila()
 
 (*Conjuntos de moves*)
 val worklistMoves    : moveSet = tigerset.newEmpty(movecmp)
@@ -46,22 +49,22 @@ val constrainedMoves : moveSet = tigerset.newEmpty(movecmp)
 val coalescedMoves   : moveSet = tigerset.newEmpty(movecmp)
 
 
-val degree : (tigergraph.node,int) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,tigerset.NotFound) 
+val degree : (node,int) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,tigerset.NotFound) 
 
 (* Asegurarse que si (u,v) esta acá tmb está (v,u)*)
 val adjSet : (node * node) tigerset.set = tigerset.newEmpty movecmp
 
-val adjList : (tigergraph.node,nodeSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,tigerset.NotFound) 
+val adjList : (node,nodeSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,tigerset.NotFound) 
 
 
 
-val moveList : (tigergraph.node,moveSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
+val moveList : (node,moveSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,NotFound)
 
-val alias : (node,node) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
+val alias : (node,node) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,NotFound)
 (*
 
 (* revisar tipo de color *)
-val nodeColor : (node,tigertemp.temp) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
+val nodeColor : (node,tigertemp.temp) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,NotFound)
 *)
 
 fun adjacent (v) = difference(Polyhash.find adjList v,union(selectStack,coalescedNodes)) 
@@ -81,7 +84,7 @@ fun pop() = let val n = topPila(selectPila)
 end
 (*
 fun intersect a b = 
-  let c = tigerset.empty(tigerset.hash,tigergraph.eq) in
+  let c = tigerset.empty(tigerset.hash,nodeeq) in
      
      tigerset.app (fn x => if tigerset.member(b,x) then tigerset.add(c,x) else ()) a
   
@@ -90,7 +93,7 @@ fun intersect a b =
 *)
 
 fun AddEdge(u,v) =
-   if not(member(adjSet,(u,v))) andalso not(tigergraph.eq(u,v)) then (
+   if not(member(adjSet,(u,v))) andalso not(nodeeq(u,v)) then (
       addList(adjSet,[(u,v),(v,u)]) ; (
       if not(member(precolored,u)) then (
          add(Polyhash.find adjList u,v) ;
@@ -197,7 +200,7 @@ fun Coalesce () = let val (x,y) = unElem(worklistMoves)
  in
       
     delete(worklistMoves,(x,y)) ;
-    if tigergraph.eq(u,v) then ( (* u = v *)
+    if nodeeq(u,v) then ( (* u = v *)
        add(coalescedMoves,(x,y)) ;
        AddWorkList(u)
     ) else if (member(precolored,v) orelse member(adjSet,(u,v))) then (
@@ -221,7 +224,7 @@ fun Freeze() = let val u = freezeheuristic()
     FreezeMoves(u)
  end
                                                (* GetAlias(y) = GetAlias(u)*)
-fun FreezeMoves(u) = let fun body (x,y) = let (val v = if tigergraph.eq(GetAlias(y),GetAlias(u)) then GetAlias(x) else GetAlias(y))
+fun FreezeMoves(u) = let fun body (x,y) = let (val v = if nodeeq(GetAlias(y),GetAlias(u)) then GetAlias(x) else GetAlias(y))
                           in
                             Hashset.delete(activeMoves,(x,y)) ;
                             Hashset.add(frozenMoves(x,y)) ;
@@ -274,7 +277,7 @@ fun AssignColors() = let fun body() = let val n = topPila(SelectStack)
 
 fun nodelist2set l = 
 let 
-	val newset = tigerset.newEmpty tigergraph.cmp 
+	val newset = tigerset.newEmpty nodecmp 
 in 
 	tigerset.addList(newset,l) ; 
 	newset 
@@ -343,7 +346,7 @@ val initial     : tempSet = newTempSet ()
 
 val worklistMoves : moveSet = tigerset.newEmpty(movecmp)
 
-val moveList : (tigergraph.node,moveSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
+val moveList : (node,moveSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,NotFound)
 
 
 fun templist2set l = 
