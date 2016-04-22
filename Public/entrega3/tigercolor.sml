@@ -360,7 +360,7 @@ in
 end
 
 fun peekorempty table element cmp = case Polyhash.peek table element  of
-					| SOME s => s
+					 SOME s => s
 					| NONE => tigerset.newEmpty cmp
 
 
