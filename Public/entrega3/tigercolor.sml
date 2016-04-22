@@ -14,14 +14,14 @@ fun moveeq  ((a,b),(c,d)) = (tigergraph.eq(a,c)) andalso (tigergraph.eq(b,d))
 fun movecmp ((a,b),(c,d)) = case tigergraph.cmp(a,c) of EQUAL => tigergraph.cmp(b,d)
                                                       |   x   => x
 
-
 val emptySet : nodeSet = tigerset.newEmpty tigergraph.cmp
 
-
-
-
+(*Conjuntos de nodos*)
+val precolored : nodeSet = tigerset.newEmpty tigergraph.cmp
+val initial : nodeSet = tigerset.newEmpty tigergraph.cmp
 
 type allocation = (tigertemp.temp, tigerframe.register) Polyhash.hash_table
+
 
 (*Conjuntos de nodos*)
 val precolored       : nodeSet = tigerset.newEmpty tigergraph.cmp
@@ -43,14 +43,13 @@ val frozenMoves      : moveSet = tigerset.newEmpty(movecmp)
 val constrainedMoves : moveSet = tigerset.newEmpty(movecmp)
 val coalescedMoves   : moveSet = tigerset.newEmpty(movecmp)
 
-val degree : (tigergraph.node,int) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound) 
 
+val degree : (tigergraph.node,int) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,tigerset.NotFound) 
 
-(*
 (* Asegurarse que si (u,v) esta acá tmb está (v,u)*)
-val adjSet : (node * node) tigerset.set = tigerset.empty(tigerset.hash,moveeq)
-*)
-val adj_tbl : (tigergraph.node,nodeSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound) 
+val adjSet : (node * node) tigerset.set = tigerset.newEmpty movecmp
+
+val adj_tbl : (tigergraph.node,nodeSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,tigerset.NotFound) 
 
 
 (*
@@ -175,19 +174,21 @@ fun nodelist2set l = tigerset.addList((tigerset.newEmpty tigergraph.cmp), l)
 
 fun initialize (IGRAPH{graph, tnode, gtemp, moves})  = 
 let
-(*
+
     fun addEdges node = 
     let
-        val scc = succ node
-        val edges = filter (fn x => not (member (precolored, x))) (adj node)
+        val scc = tigergraph.succ node
+        val edges = List.filter (fn x => not (member (precolored, x))) (tigergraph.adj node)
     in
-        Polyhash.insert(adj_tbl, nodelist2set edges);
-        Polyhash.insert(degree, length edges);
+        Polyhash.insert(adj_tbl, (node,nodelist2set edges));
+        Polyhash.insert(degree, (node,length edges));
         List.app (fn x => tigerset.addList(adjSet, [(x, node),(node,x)])) scc
     end
     fun peekorempty t n = case tigerset.peek(t,n) of
                             SOME s => s
                             | NONE => tigerset.empty(tigerset.hash, moveeq) 
+    
+(*    
     fun addMoves (d,s) = 
     let
         val movelistd = (peekorempty moveList d) 
@@ -209,9 +210,7 @@ in
     tigerset.addList(initial, tigergraph.nodes graph);
     List.app (fn x => tigerset.delete(initial, x)) precoloredList
     (* add_tbl (adjList), adjSet y degree *)
-(*
     List.app addEdges (nodes graph)
-*)
     (* moveList y workListmoves *) 
 (*
     List.app addMoves moves
