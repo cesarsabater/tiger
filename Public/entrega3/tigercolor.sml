@@ -427,14 +427,26 @@ let
              else if notEmpty(freezeWorklist) then (Freeze() ; Loop())
              else if notEmpty(spillWorklist) then (SelectSpill(); Loop())
              else ()
-      
+
+	fun printWL wl = 
+		List.app (fn tmp => print (tmp^"\n")) (listItems wl)
 in
 	Build () ; 
+	print "\n\ninitials:\n" ;
+	printWL initial;
+	print "\n\nprecolored:\n" ;
+	printWL precolored;
 	MakeWorklist ()  ;
+	print "\n\nsimplify:\n" ;
+	printWL simplifyWorklist;
+	print "\n\nfreeze:\n" ;
+	printWL freezeWorklist;
+	print "\n\nspill:\n" ;
+	printWL spillWorklist;
 	Loop()(* ;
 	AssignColors() *)
-
 end
+
 	
 end
 
