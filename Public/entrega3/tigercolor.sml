@@ -272,8 +272,17 @@ fun AssignColors() = let fun body() = let val n = topPila(SelectStack)
     
 *)
 
-fun nodelist2set l = let val newset = tigerset.newEmpty tigergraph.cmp in tigerset.addList(newset,l) ; newset end
+fun nodelist2set l = 
+let 
+	val newset = tigerset.newEmpty tigergraph.cmp 
+in 
+	tigerset.addList(newset,l) ; 
+	newset 
+end
 
+
+
+(*
 fun initialize (IGRAPH{graph, tnode, gtemp, moves})  = 
 let
 
@@ -286,9 +295,8 @@ let
         Polyhash.insert degree (node,length edges) ;
         List.app (fn x => tigerset.addList(adjSet, [(x, node),(node,x)])) scc
     end
-    fun peekorempty t n = case tigerset.peek(t,n) of
-                            SOME s => s
-                            | NONE => tigerset.empty(tigerset.hash, moveeq) 
+   
+*)
     
 (*    
     fun addMoves (d,s) = 
@@ -304,6 +312,7 @@ let
     end
 *)
     
+(*
     val precoloredList = Splayset.listItems(tigerliveness.getPrecoloredNodes())
 in
     (* precolored *)
@@ -314,29 +323,98 @@ in
     (* add_tbl (adjList), adjSet y degree *)
     List.app addEdges (nodes graph)
     (* moveList y workListmoves *) 
-(*
     List.app addMoves moves
+end
 *)
+
+
+type temp = tigertemp.temp
+type move = temp * temp
+type tempSet = temp set
+type moveSet = move set
+
+fun movecmp ((a,b),(c,d)) = case String.cmp(a,c) of EQUAL => String.cmp(b,d)
+													  |   x   => x
+									
+fun newTempSet () = tigerset.newEmpty String.cmp
+													 
+val precolored  : tempSet = templist2set tigerframe.usable
+val initial     : tempSet = newTempSet ()
+
+val worklistMoves : moveSet = tigerset.newEmpty(movecmp)
+
+val moveList : (tigergraph.node,moveSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
+
+
+fun templist2set l = 
+let 
+	val newset = tigerset.newEmpty String.cmp
+in 
+	tigerset.addList(newset,l) ; 
+	newset 
 end
 
+fun peekorempty table element cmp = case Polyhash.peek table element  of
+					| SOME s => s
+					| NONE => tigerset.newEmpty cmp
 
-(* mandamos cada nodo a su worklist *) 
-(*
-fun selectWL node = 
+
+fun MakeWorklist () = 
 let
-    val deg = Polyhash.find(degree, node)
+	fun selectWL tmp = 
+	let
+		val deg = Polyhash.find(degree, tmp)
+	in
+		if deg >= KCONST
+		then tigerset.add(spillWorklist, tmp)
+		else if MoveRelated(tmp) 
+			then tigerset.add(freezeWorkList, tmp)
+			else tigerset.add(simplifyWorkList, tmp)   
+	end
 in
-    if deg >= tigerset.numItems(precolored)
-    then tigerset.add(spillWorklist, node)
-    else if MoveRelated(node) 
-        then tigerset.add(freezeWorkList, node)
-        else tigerset.add(simplifyWorkList, node)   
+	tigerset.app selectWL initial
 end
 
-fun makeWorklist () = tigerset.app selectWL initial
-*)
-
-fun main igraph = initialize igraph 
+fun main liveout (FGRAPH{control, def, use, ismove}, ilist) = 
+let
+	fun Build () = 
+	let
+		(* valores vivos en cada instruccion, empezando por la ultima *)
+		val live : tempSet = templist2set (liveout (last ilist))
+		fun procInstr instr = 
+		let
+			val ismove' = Splaymap.find(ismove, instr)
+			val use' = templist2set(Splaymap.find(use, instr))
+			val def' = templist2set(Splaymap.find(def, instr))
+			fun addToMoveList n = 
+			let  
+				val moveList_n = peekorempty moveList n movecmp 
+			in 
+				add(moveList_n, instr);
+				Polyhash.insert moveList (n, moveList_m)
+			end
+		in 	
+			(*agregamos nodos a initial *)
+			initial := union(initial, union(use',def'));
+			(*hacemos el resto del build*)
+			if ismove' then 
+				live := difference(live, use') ;
+				tigerset.app addToMoveList (union (def', use')) ;
+				add (worklistMoves, instr) 
+			else () ;
+			live := union(live,def');
+			app (fn d => app (fn l => AddEdge(l,d)) live) def';
+			live := union(use',difference(live,def'));
+		end	
+	in  
+		List.app procInstr (rev ilist); (*app aplica de izquierda a derecha entonces funca*)
+		initial := difference(initial, precolored) 
+	end
+in
+	Build () ; 
+	MakeWorkList ();
+end
+	
 
 end
 
