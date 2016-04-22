@@ -1,6 +1,6 @@
 signature tigerset =
 sig
-  type 'item set
+   type 'item set = 'item Splayset.set ref
   
   exception NotFound
 

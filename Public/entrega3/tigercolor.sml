@@ -18,6 +18,13 @@ fun nodecmp (a,b) = String.compare(a,b)
 fun moveeq  ((a,b),(c,d)) = nodeeq(a,c) andalso nodeeq(b,d)
 fun movecmp ((a,b),(c,d)) = case nodecmp(a,c) of EQUAL => nodecmp(b,d)
                                                        |   x   => x
+fun nodelist2set l = 
+let 
+	val newset = tigerset.newEmpty nodecmp 
+in 
+	tigerset.addList(newset,l) ; 
+	newset 
+end
 
 val emptySet : nodeSet = tigerset.newEmpty nodecmp
 
@@ -29,7 +36,7 @@ type allocation = (tigertemp.temp, tigerframe.register) Polyhash.hash_table
 
 
 (*Conjuntos de nodos*)
-val precolored       : nodeSet = tigerset.newEmpty nodecmp
+val precolored  : nodeSet = nodelist2set tigerframe.usable
 val initial          : nodeSet = tigerset.newEmpty nodecmp
 val simplifyWorklist : nodeSet = tigerset.newEmpty(nodecmp) 
 val freezeWorklist   : nodeSet = tigerset.newEmpty(nodecmp)
@@ -275,16 +282,6 @@ fun AssignColors() = let fun body() = let val n = topPila(SelectStack)
     
 *)
 
-fun nodelist2set l = 
-let 
-	val newset = tigerset.newEmpty nodecmp 
-in 
-	tigerset.addList(newset,l) ; 
-	newset 
-end
-
-
-
 (*
 fun initialize (IGRAPH{graph, tnode, gtemp, moves})  = 
 let
@@ -330,90 +327,71 @@ in
 end
 *)
 
-
-type temp = tigertemp.temp
-type move = temp * temp
-type tempSet = temp set
-type moveSet = move set
-
-fun movecmp ((a,b),(c,d)) = case String.cmp(a,c) of EQUAL => String.cmp(b,d)
-													  |   x   => x
-									
-fun newTempSet () = tigerset.newEmpty String.cmp
-													 
-val precolored  : tempSet = templist2set tigerframe.usable
-val initial     : tempSet = newTempSet ()
-
-val worklistMoves : moveSet = tigerset.newEmpty(movecmp)
-
-val moveList : (node,moveSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,NotFound)
-
-
-fun templist2set l = 
-let 
-	val newset = tigerset.newEmpty String.cmp
-in 
-	tigerset.addList(newset,l) ; 
-	newset 
-end
-
-fun peekorempty table element cmp = case Polyhash.peek table element  of
-					| SOME s => s
-					| NONE => tigerset.newEmpty cmp
+								
+												
+fun peekorempty table element comparacion = case Polyhash.peek table element  of
+					 SOME s => s
+					| NONE => tigerset.newEmpty comparacion
 
 
 fun MakeWorklist () = 
 let
 	fun selectWL tmp = 
 	let
-		val deg = Polyhash.find(degree, tmp)
+		val deg = Polyhash.find degree tmp
 	in
 		if deg >= KCONST
 		then tigerset.add(spillWorklist, tmp)
 		else if MoveRelated(tmp) 
-			then tigerset.add(freezeWorkList, tmp)
-			else tigerset.add(simplifyWorkList, tmp)   
+			then tigerset.add(freezeWorklist, tmp)
+			else tigerset.add(simplifyWorklist, tmp)   
 	end
 in
 	tigerset.app selectWL initial
 end
 
-fun main liveout (FGRAPH{control, def, use, ismove}, ilist) = 
+fun main liveout (tigerflow.FGRAPH{control, def, use, ismove}, ilist) = 
 let
 	fun Build () = 
 	let
 		(* valores vivos en cada instruccion, empezando por la ultima *)
 		fun procInstr instr = 
 		let
-			val live = templist2set (liveout instr)
+			val live = nodelist2set (liveout instr)
 			val ismove' = Splaymap.find(ismove, instr)
-			val use' = templist2set(Splaymap.find(use, instr))
-			val def' = templist2set(Splaymap.find(def, instr))
-			fun addToMoveList n = 
+			val use' = nodelist2set(Splaymap.find(use, instr))
+			val def' = nodelist2set(Splaymap.find(def, instr))
+			fun addToMoveList n mv = 
 			let  
-				val moveList_n = peekorempty moveList n movecmp 
+				val moveList_n = peekorempty moveList n movecmp
 			in 
-				add(moveList_n, instr);
-				Polyhash.insert moveList (n, moveList_m)
+				tigerset.add(moveList_n, mv);
+				Polyhash.insert moveList (n, moveList_n)
 			end
 		in 	
 			(*agregamos nodos a initial *)
-			initial := union(initial, union(use',def'));
+			initial := !(tigerset.union(initial, union(use',def')));
 			(*hacemos el resto del build*)
 			if ismove' then 
-				live := difference(live, use') ;
-				tigerset.app addToMoveList (union (def', use')) ;
-				add (worklistMoves, instr) 
+				let
+					val src = unElem use'
+					val dst = unElem def'
+				in 
+					(tigerset.delete(live, src);
+					addToMoveList src (dst, src); 
+					addToMoveList dst (dst, src);
+					add (worklistMoves, (dst, src)))
+				end
 			else () ;
-			app (fn d => app (fn l => AddEdge(l,d)) live) def';
+			app (fn d => app (fn l => AddEdge(l,d)) live) def'
 		end	
 	in  
 		List.app procInstr (rev ilist); (*app aplica de izquierda a derecha entonces funca*)
-		initial := difference(initial, precolored) 
+		initial := !(difference(initial, precolored))
 	end
 in
 	Build () ; 
-	MakeWorkList ();
+	MakeWorklist ()
 end
 	
 
