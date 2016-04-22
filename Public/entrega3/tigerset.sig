@@ -24,5 +24,6 @@ sig
   val all          : ('_item -> bool) -> '_item set -> bool
   val exists       : ('_item -> bool) -> '_item set -> bool
   val numItems     : ('item set) -> int
+  val listItems    : ('item set) -> 'item list
   
 end

@@ -2,7 +2,6 @@ structure tigerset :> tigerset =
 struct
  type 'a set = 'a Splayset.set ref
  
- 
  exception NoEncontrado
  
  fun newEmpty f = ref (Splayset.empty f)
@@ -36,5 +35,6 @@ struct
  fun intersection(a,b) = ref (Splayset.intersection(!a,!b))
  fun difference(a,b) = ref (Splayset.difference(!a,!b))
  fun numItems s = Splayset.numItems(!s)
+ fun listItems s = Splayset.listItems(!s)
  
 end

@@ -58,18 +58,14 @@ fun main(args) =
 		
           
         val (igraph,liveout) = interferenceGraph flowgraph 
-        val _ = print "Liveout Temps:\n"
+        val _ = print "Liveout Temps:\n\n\n"
         val _ = printLiveOut flowgraph
-		val _ = print "Grafo de Interferencia\n"
+		val _ = print "Grafo de Interferencia\n\n\n\n"
         val _ = tigerliveness.show igraph
         
         val _ = tigercolor.main liveout (flowgraph,ilist)
-(*
-        val _ = tigercolor.main liveout flowgraph
-*)
         
 	in
-		
 		print "yes!!\n"
 		
 	end	handle Fail s => print("Fail: "^s^"\n")

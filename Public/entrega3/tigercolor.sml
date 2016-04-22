@@ -73,8 +73,6 @@ val adjSet : (node * node) tigerset.set = tigerset.newEmpty movecmp
 
 val adjList : (node,nodeSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,ErrorAdjList) 
 
-
-
 val moveList : (node,moveSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,ErrorMoveList)
 
 val alias : (node,node) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,ErrorAlias)
@@ -118,6 +116,10 @@ fun intersect a b =
   
 *)
 
+fun peekOrEmpty table element comparacion = case Polyhash.peek table element  of
+			 SOME s => s
+			| NONE => tigerset.newEmpty comparacion
+
 fun findinitNS ht i = let val ne : nodeSet = newEmpty(nodecmp) in 
      case Polyhash.peekInsert ht (i,ne) of SOME s => s
                                          | NONE => ne  
@@ -142,7 +144,6 @@ fun AddEdge(u,v) =
          Polyhash.insert degree (v,(findinitI degree v)+1)) else ())
    ) else ()        
       
-	
 
 fun NodeMoves(n) = 
      intersection((findinitMS moveList n),union(activeMoves,worklistMoves)) 
@@ -361,12 +362,7 @@ end
 
 type temp = tigertemp.temp
 fun newTempSet () = tigerset.newEmpty String.compare
-													 
-
-fun peekorempty table element comparacion = case Polyhash.peek table element  of
-					 SOME s => s
-					| NONE => tigerset.newEmpty comparacion
-
+										 
 
 fun MakeWorklist () = 
 let
@@ -392,19 +388,21 @@ let
 		fun procInstr instr = 
 		let
 			val live = nodelist2set (liveout instr)
-			val ismove' = Splaymap.find(ismove, instr)
+			val ismove' = Splaymap.find(ismove, instr)  
 			val use' = nodelist2set(Splaymap.find(use, instr))
 			val def' = nodelist2set(Splaymap.find(def, instr))
 			fun addToMoveList n mv = 
 			let  
-				val moveList_n = peekorempty moveList n movecmp
+				val moveList_n = peekOrEmpty moveList n movecmp
 			in 
 				tigerset.add(moveList_n, mv);
 				Polyhash.insert moveList (n, moveList_n)
 			end
 			
-			fun count t = case (Polyhash.peekInsert  usedefcount (t,1)) of SOME d => Polyhash.insert usedefcount (t,d+1)
-			                                                             | NONE   => ()
+			fun count t = 
+				case (Polyhash.peekInsert  usedefcount (t,1)) of 
+						SOME d => Polyhash.insert usedefcount (t,d+1)
+			          | NONE   => ()
 			   
 		in 	
 		    (**)
@@ -417,16 +415,16 @@ let
 					val src = unElem use'
 					val dst = unElem def'
 				in 
-					(tigerset.delete(live, src);
+					(if member(live,src) then tigerset.delete(live, src) else ();
 					addToMoveList src (dst, src); 
 					addToMoveList dst (dst, src);
 					add (worklistMoves, (dst, src)))
 				end
-			else () ;
+			else ();
 			app (fn d => app (fn l => AddEdge(l,d)) live) def'
 		end	
 	in  
-		List.app procInstr (rev ilist); (*app aplica de izquierda a derecha entonces funca*)
+		List.app procInstr (rev (tigergraph.nodes control)); (*app aplica de izquierda a derecha entonces funca*)
 		initial := !(difference(initial, precolored))
 	end
 	
@@ -437,14 +435,27 @@ let
              else if notEmpty(spillWorklist) then (SelectSpill(); Loop())
              else ())	
     end
+
+	fun printWL wl = 
+		List.app (fn tmp => print (tmp^"\n")) (listItems wl)
 	
 in
 	Build () ; 
+	print "\n\ninitials:\n" ;
+	printWL initial;
+	print "\n\nprecolored:\n" ;
+	printWL precolored;
 	MakeWorklist ()  ;
+	print "\n\nsimplify:\n" ;
+	printWL simplifyWorklist;
+	print "\n\nfreeze:\n" ;
+	printWL freezeWorklist;
+	print "\n\nspill:\n" ;
+	printWL spillWorklist;
 	Loop()(* ;
 	AssignColors() *)
 end
 
-
+	
 end
 

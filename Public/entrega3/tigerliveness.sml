@@ -151,7 +151,9 @@ let
 in        
 	calcLiveness flowgraph;
     List.app instr_interf (nodes fgraph) ;
+(*
     addPrecolored [] precoloredList ; 
+*)
     (IGRAPH {graph = igraph,
 		    tnode  = tnode, 
 			gtemp  = gtemp, 
