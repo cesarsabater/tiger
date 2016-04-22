@@ -63,7 +63,9 @@ fun main(args) =
 		val _ = print "Grafo de Interferencia\n"
         val _ = tigerliveness.show igraph
         
+(*
         val _ = tigercolor.main liveout flowgraph
+*)
         
 	in
 		

@@ -380,9 +380,9 @@ let
 	fun Build () = 
 	let
 		(* valores vivos en cada instruccion, empezando por la ultima *)
-		val live : tempSet = templist2set (liveout (last ilist))
 		fun procInstr instr = 
 		let
+			val live = templist2set (liveout instr)
 			val ismove' = Splaymap.find(ismove, instr)
 			val use' = templist2set(Splaymap.find(use, instr))
 			val def' = templist2set(Splaymap.find(def, instr))
@@ -402,9 +402,7 @@ let
 				tigerset.app addToMoveList (union (def', use')) ;
 				add (worklistMoves, instr) 
 			else () ;
-			live := union(live,def');
 			app (fn d => app (fn l => AddEdge(l,d)) live) def';
-			live := union(use',difference(live,def'));
 		end	
 	in  
 		List.app procInstr (rev ilist); (*app aplica de izquierda a derecha entonces funca*)
