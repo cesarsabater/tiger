@@ -5,8 +5,10 @@ open tigerpila
 open tigerliveness
 open tigerset
 
+(*KCONST colores*)
 val KCONST = List.length(tigerframe.usable)
 
+(*Definiciones de nodos y moves*)
 type node = tigertemp.temp
 type move = (node * node)
 type nodeSet = node set
@@ -25,6 +27,8 @@ in
 	tigerset.addList(newset,l) ; 
 	newset 
 end
+
+(**)
 
 val emptySet : nodeSet = tigerset.newEmpty nodecmp
 
@@ -221,66 +225,66 @@ fun Coalesce () = let val (x,y) = unElem(worklistMoves)
       ) else  
          add(activeMoves,(x,y)) 
  end       
-
-
-(*
-fun Freeze() = let val u = freezeheuristic() 
- in
-    Hashset.delete(freezeWorklist,u) ;
-    Hashset.add(simplifyWorklist,u) ;
-    FreezeMoves(u)
- end
-                                               (* GetAlias(y) = GetAlias(u)*)
-fun FreezeMoves(u) = let fun body (x,y) = let (val v = if nodeeq(GetAlias(y),GetAlias(u)) then GetAlias(x) else GetAlias(y))
+ 
+                                                          (* GetAlias(y) = GetAlias(u)*)
+fun FreezeMoves(u) = let fun body (x,y) = let val v = if nodeeq(GetAlias(y),GetAlias(u)) then GetAlias(x) else GetAlias(y)
                           in
-                            Hashset.delete(activeMoves,(x,y)) ;
-                            Hashset.add(frozenMoves(x,y)) ;
-                            if (Hashset.isEmpty(NodeMoves(v))) andalso (Polyhash.find degree v < KCONST) then
-                               Hashset.delete(freezeWorklist,v) ;
-                               Hashset.add(simplifyWorklist,v)
+                            delete(activeMoves,(x,y)) ;
+                            add(frozenMoves,(x,y)) ;
+                            if (isEmpty(NodeMoves(v))) andalso (Polyhash.find degree v < KCONST) then
+                               (delete(freezeWorklist,v) ;
+                               add(simplifyWorklist,v))
                             else 
                                ()
                           end     
   in
-     Hashset.app body NodeMoves(u)
+     tigerset.app body NodeMoves(u)
   end           
+
+
+fun Freeze() = let val u = unElem freezeWorklist 
+ in
+    delete(freezeWorklist,u) ;
+    add(simplifyWorklist,u) ;
+    FreezeMoves(u)
+ end
  
  
 (* Spill worklist*) 
-fun spillheuristic() = 
+fun spillheuristic() = unElem spillWorklist
 
 fun SelectSpill() = let val m = spillheuristic() 
   
   in
-     Hashset.delete(spillWorklist,m) ;
-     Hashset.add(simplifyWorklist,m) ;
+     delete(spillWorklist,m) ;
+     add(simplifyWorklist,m) ;
      FreezeMoves(m)
   end                                      
 
-fun AssignColors() = let fun body() = let val n = topPila(SelectStack)
-                                          val okColors
-                                          fun rmvColors w = if (Hashset.member(coloredNodes,GetAlias(w)) orelse
-                                                                Hashset.member(precolored,GetAlias(w))) then
-                                                                Hashset.remove(okColors,(Polyhash.find color GetAlias(w))) 
+
+fun AssignColors() = let fun body() = let val n = pop()
+                                          val okColors = newEmpty (String.compare)
+                                          fun rmvColors w = if (member(coloredNodes,GetAlias(w)) orelse
+                                                                member(precolored,GetAlias(w))) then
+                                                                remove(okColors,(Polyhash.find color GetAlias(w))) 
                                                              else () 
                           in
-                            popPila(SelectStack) ;
-                            Hashset.app rmvColors (Polyhash.find(adjList,n)) ;
-                            if Hashset.isEmpty(okColors) then
-                              Hashset.add(spilledNodes,n) 
-                            else (
-                              Hashset.add(coloredNodes,n) ;
-                              Polyhash.insert color (n,Hashset.unelem(okColors)) 
-                            ) ;
+                            addList(okColors,tigerframe.usable) ;
+                            tigerset.app rmvColors (Polyhash.find adjList n) ;
+                            if isEmpty(okColors) then
+                              add(spilledNodes,n) 
+                            else ( 
+                              add(coloredNodes,n) ;
+                              Polyhash.insert color (n, unElem(okColors)) 
+                             ) 
                           end  
-                         fun coalescedcolor n = Polyhash.insert color (n,(Polyhash.find color GetAlias(n))) 
+                          fun coalescedcolor n = Polyhash.insert color (n,(Polyhash.find color GetAlias(n))) 
                             
  in                            
-   (while not(estaVacia(SelectStack)) do body()) ;
-   Hashset.app coalescedcolor coalescedNodes
+   (while not(isEmpty(SelectStack)) do body()) ;
+   tigerset.app coalescedcolor coalescedNodes
  end
     
-*)
 
 (*
 fun initialize (IGRAPH{graph, tnode, gtemp, moves})  = 
