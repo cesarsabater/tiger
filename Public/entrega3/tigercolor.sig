@@ -10,8 +10,6 @@ sig
 				  spillCost: tigergraph.node -> int, 
 				  registers: tigerframe.register list} 
 					-> allocation * tigertemp.temp list
-*)
-                    
-
-    val main : tigerliveness.igraph -> unit 
+*)              
+    val main : tigerliveness.liveness * (tigerflow.flowgraph * tigergraph.node list) -> unit 
 end

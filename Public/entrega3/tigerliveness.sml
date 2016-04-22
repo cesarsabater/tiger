@@ -13,6 +13,8 @@ datatype igraph =
 					moves: (tigergraph.node * tigergraph.node) list
 				}
 				
+type liveness = (tigergraph.node -> tigertemp.temp list) 
+				
 val precoloredList = (tigerframe.argregs
 						@tigerframe.callersaves
 						@tigerframe.calleesaves
@@ -158,8 +160,6 @@ in
 end     
 
 fun show (IGRAPH{graph, gtemp, ...}) = tigergraph.printGraphWithNaming graph gtemp
-
-fun getPrecoloredNodes () = !precoloredNodes
 
 (**-------------------------------*)
 end
