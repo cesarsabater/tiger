@@ -69,11 +69,19 @@ val alias : (node,node) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,no
 val nodeColor : (node,tigertemp.temp) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,NotFound)
 *)
 
+val color : (node,tigertemp.temp) Polyhash.hash_table = Polyhash.mkTable(Polyhash.hash,nodeeq) (1000,NotFound)
+
+val usedefcount : (node,int) Polyhash.hash_table = Polyhash.mkTable(Polyhash.hash,nodeeq) (1000,NotFound)
+
+
+
 fun adjacent (v) = difference(Polyhash.find adjList v,union(selectStack,coalescedNodes)) 
 
 fun adj_app v p = tigerset.app (fn x => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then p x else ()) (Polyhash.find adjList v)  
 
 fun adj_fold v f e = tigerset.fold (fn (x,b) => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then f(x,b) else b) e (Polyhash.find adjList v)
+
+
 
 
 fun push v = (pushPila selectPila v ; tigerset.add (selectStack,v))
@@ -398,7 +406,13 @@ let
 				add(moveList_n, instr);
 				Polyhash.insert moveList (n, moveList_m)
 			end
+			
+			fun count t = case (Polyhash.peek (t,1)) of SOME d => Polyhash.insert usedefcount (t,d+1)
+			                                          | NONE   => ()
+			   
 		in 	
+		    (**)
+		    app count union(use',def');
 			(*agregamos nodos a initial *)
 			initial := union(initial, union(use',def'));
 			(*hacemos el resto del build*)
