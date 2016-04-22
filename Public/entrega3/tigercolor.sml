@@ -51,20 +51,25 @@ val degree : (tigergraph.node,int) Polyhash.hash_table = Polyhash.mkTable (Polyh
 (* Asegurarse que si (u,v) esta acá tmb está (v,u)*)
 val adjSet : (node * node) tigerset.set = tigerset.newEmpty movecmp
 
-val adj_tbl : (tigergraph.node,nodeSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,tigerset.NotFound) 
+val adjList : (tigergraph.node,nodeSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,tigerset.NotFound) 
 
 
 
 val moveList : (tigergraph.node,moveSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
-(*
+
 val alias : (node,node) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
+(*
+
 (* revisar tipo de color *)
 val nodeColor : (node,tigertemp.temp) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,tigergraph.eq) (1000,NotFound)
 *)
 
-fun adjacent (v) = difference(Polyhash.find adj_tbl v,union(selectStack,coalescedNodes)) 
+fun adjacent (v) = difference(Polyhash.find adjList v,union(selectStack,coalescedNodes)) 
 
-fun adj_app v p = tigerset.app (fn x => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then p x else ()) (Polyhash.find adj_tbl v)  
+fun adj_app v p = tigerset.app (fn x => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then p x else ()) (Polyhash.find adjList v)  
+
+fun adj_fold v f e = tigerset.fold (fn (x,b) => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then f(x,b) else b) e (Polyhash.find adjList v)
+
 
 fun push v = (pushPila selectPila v ; tigerset.add (selectStack,v))
              
@@ -84,7 +89,17 @@ fun intersect a b =
   
 *)
 
-
+fun AddEdge(u,v) =
+   if not(member(adjSet,(u,v))) andalso not(tigergraph.eq(u,v)) then (
+      addList(adjSet,[(u,v),(v,u)]) ; (
+      if not(member(precolored,u)) then (
+         add(Polyhash.find adjList u,v) ;
+         Polyhash.insert degree (u,((Polyhash.find degree u)+ 1))) else () ;
+      if not(member(precolored,v)) then (
+         add(Polyhash.find adjList v,u) ;
+         Polyhash.insert degree (v,(Polyhash.find degree v)+1)) else ())
+   ) else ()        
+      
 	
 
 fun NodeMoves(n) = 
@@ -129,49 +144,135 @@ fun Simplify () = let val v = tigerset.unElem(simplifyWorklist)
      tigerset.delete (simplifyWorklist,v);    
      adj_app v DecrementDegree
   end      
- (*
-fun Coalesce () = let val (x,y) = Hashset.unelem(worklistMoves) 
-                      val (x',y') = (GetAlias(x),GetAlias(y))
-                      val (u,v) = if Hashset.member(precolored,y') then (y',x') else (x',y') 
-   in
-      
-      Hashset.delete(workListMoves,(x,y)) ;
-      if tigergraph.eq(u,v) then ( (* u = v *)
-         Hashset.add(coalescedMoves,(x,y)) ;
-         AddWorkList(u)
-      ) else if (Hashset.member(precolored,v) orelse Hashset.member(adjSet,(u,v))) then (
-         Hashset.add(constrainedMoves,(x,y)) ;
-         AddWorkList(u) ;
-         AddWorkList(v) 
-      ) else if (Hashset.member(precolored,u) andalso condition1 (u,v) ) orelse (not(Hashset.member(precolored,u)) andalso condition2(u,v) ) then (
-         Hashset.add(coalescedMoves,(x,y)) ;
-         Combine(u,v) ;
-         AddWorkList(u);
-      ) else  
-         Hashset.add(activeMoves,(x,y)) 
  
-   end       
-               
-
-fun condition1 (u,v) =
-                        
-    tigerset.all (fun x => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then OKheur x v else true) 
-    adjacent(v)
-
-fun condition2 (u,v) =
-
-   Conservative (adjacent (u)) andalso Conservative (adjacent (v))       
+       
+fun GetAlias (n) = if member(coalescedNodes,n) then GetAlias(Polyhash.find alias n) else n  
 
 fun AddWorkList(u) = 
-   if not(tigerset.member(precolored,u)) andalso not(MoveRelated(u)) andalso (Polyhash.find(degree,u) < KCONST) then
-      tigerset.delete(freezeWorklist,u)
-      tigerset.add(simplifyWorklist,u) 
+   if not(member(precolored,u)) andalso not(MoveRelated(u)) andalso (Polyhash.find degree u < KCONST) then
+      (delete(freezeWorklist,u) ;
+      add(simplifyWorklist,u)) 
    else ()
+
+fun OKheur (t,r) = (Polyhash.find degree t) < KCONST orelse member(precolored,t) orelse member(adjSet,(t,r)) 
+
+fun Conservative (nodes) = let fun count (x,i)  = if (Polyhash.find degree x >= KCONST) then (i+1) else i
+ in
+   (tigerset.fold count 0 nodes) < KCONST
+ end 
+
+fun condition1 (u,v) = adj_fold v (fn (t,b) =>  b andalso OKheur(t,u)) true 
+
+fun condition2 (u,v) =
+    Conservative(union(adjacent(u),adjacent(v)))
+
+   
+
+  
  
-fun OKheur t r =  (Polyhash.find(degree,t) < KCONST) orelse tigerset.member(precolored,t) orelse tigerset.member(adjSet,(t,r))    
+fun Combine(u,v) = let val movelistu = Polyhash.find moveList u 
+                       val movelistv = Polyhash.find moveList v
+                       val moveunion = union(movelistu,movelistv) 
+                                              
+ in
+   (if member(freezeWorklist,v) then
+       delete(freezeWorklist,v)
+   else 
+      delete(spillWorklist,v)
+   ) ;
+   add(coalescedNodes,v);
+   Polyhash.insert alias (v,u) ;
+   Polyhash.insert moveList (u,moveunion) ;
+   EnableMoves(v) ;
+   adj_app v (fn t => (AddEdge(t,u);DecrementDegree(t)) )  ;
+   if (Polyhash.find degree u >= KCONST) andalso (member(freezeWorklist,u)) then( 
+      delete(freezeWorklist,u) ;
+      add(spillWorklist,u) ) 
+   else ()
+ end       
+
+fun Coalesce () = let val (x,y) = unElem(worklistMoves) 
+                      val (x',y') = (GetAlias(x),GetAlias(y))
+                      val (u,v) = if member(precolored,y') then (y',x') else (x',y') 
+ in
+      
+    delete(worklistMoves,(x,y)) ;
+    if tigergraph.eq(u,v) then ( (* u = v *)
+       add(coalescedMoves,(x,y)) ;
+       AddWorkList(u)
+    ) else if (member(precolored,v) orelse member(adjSet,(u,v))) then (
+       add(constrainedMoves,(x,y)) ;
+       AddWorkList(u) ;
+       AddWorkList(v) 
+    ) else if (member(precolored,u) andalso condition1 (u,v) ) orelse (not(member(precolored,u)) andalso condition2(u,v)) then (
+         add(coalescedMoves,(x,y)) ;
+         Combine(u,v) ;
+         AddWorkList(u)
+      ) else  
+         add(activeMoves,(x,y)) 
+ end       
+
+
+(*
+fun Freeze() = let val u = freezeheuristic() 
+ in
+    Hashset.delete(freezeWorklist,u) ;
+    Hashset.add(simplifyWorklist,u) ;
+    FreezeMoves(u)
+ end
+                                               (* GetAlias(y) = GetAlias(u)*)
+fun FreezeMoves(u) = let fun body (x,y) = let (val v = if tigergraph.eq(GetAlias(y),GetAlias(u)) then GetAlias(x) else GetAlias(y))
+                          in
+                            Hashset.delete(activeMoves,(x,y)) ;
+                            Hashset.add(frozenMoves(x,y)) ;
+                            if (Hashset.isEmpty(NodeMoves(v))) andalso (Polyhash.find degree v < KCONST) then
+                               Hashset.delete(freezeWorklist,v) ;
+                               Hashset.add(simplifyWorklist,v)
+                            else 
+                               ()
+                          end     
+  in
+     Hashset.app body NodeMoves(u)
+  end           
+ 
+ 
+(* Spill worklist*) 
+fun spillheuristic() = 
+
+fun SelectSpill() = let val m = spillheuristic() 
+  
+  in
+     Hashset.delete(spillWorklist,m) ;
+     Hashset.add(simplifyWorklist,m) ;
+     FreezeMoves(m)
+  end                                      
+
+fun AssignColors() = let fun body() = let val n = topPila(SelectStack)
+                                          val okColors
+                                          fun rmvColors w = if (Hashset.member(coloredNodes,GetAlias(w)) orelse
+                                                                Hashset.member(precolored,GetAlias(w))) then
+                                                                Hashset.remove(okColors,(Polyhash.find color GetAlias(w))) 
+                                                             else () 
+                          in
+                            popPila(SelectStack) ;
+                            Hashset.app rmvColors (Polyhash.find(adjList,n)) ;
+                            if Hashset.isEmpty(okColors) then
+                              Hashset.add(spilledNodes,n) 
+                            else (
+                              Hashset.add(coloredNodes,n) ;
+                              Polyhash.insert color (n,Hashset.unelem(okColors)) 
+                            ) ;
+                          end  
+                         fun coalescedcolor n = Polyhash.insert color (n,(Polyhash.find color GetAlias(n))) 
+                            
+ in                            
+   (while not(estaVacia(SelectStack)) do body()) ;
+   Hashset.app coalescedcolor coalescedNodes
+ end
+    
 *)
 
-fun nodelist2set l = tigerset.addList((tigerset.newEmpty tigergraph.cmp), l)
+fun nodelist2set l = let val newset = tigerset.newEmpty tigergraph.cmp in tigerset.addList(newset,l) ; newset end
 
 fun initialize (IGRAPH{graph, tnode, gtemp, moves})  = 
 let
@@ -181,8 +282,8 @@ let
         val scc = tigergraph.succ node
         val edges = List.filter (fn x => not (member (precolored, x))) (tigergraph.adj node)
     in
-        Polyhash.insert(adj_tbl, (node,nodelist2set edges));
-        Polyhash.insert(degree, (node,length edges));
+        Polyhash.insert adjList (node,nodelist2set edges) ;
+        Polyhash.insert degree (node,length edges) ;
         List.app (fn x => tigerset.addList(adjSet, [(x, node),(node,x)])) scc
     end
     fun peekorempty t n = case tigerset.peek(t,n) of
