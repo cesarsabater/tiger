@@ -246,7 +246,7 @@ fun FreezeMoves(u) = let fun body (x,y) = let val v = if nodeeq(GetAlias(y),GetA
                                ()
                           end     
   in
-     tigerset.app body NodeMoves(u)
+     tigerset.app body (NodeMoves(u))
   end           
 
 
@@ -274,7 +274,7 @@ fun AssignColors() = let fun body() = let val n = pop()
                                           val okColors = newEmpty (String.compare)
                                           fun rmvColors w = if (member(coloredNodes,GetAlias(w)) orelse
                                                                 member(precolored,GetAlias(w))) then
-                                                                remove(okColors,(Polyhash.find color GetAlias(w))) 
+                                                                delete(okColors,(Polyhash.find color (GetAlias(w)))) 
                                                              else () 
                           in
                             addList(okColors,tigerframe.usable) ;
@@ -286,10 +286,10 @@ fun AssignColors() = let fun body() = let val n = pop()
                               Polyhash.insert color (n, unElem(okColors)) 
                              ) 
                           end  
-                          fun coalescedcolor n = Polyhash.insert color (n,(Polyhash.find color GetAlias(n))) 
+                          fun coalescedcolor n = Polyhash.insert color (n,(Polyhash.find color (GetAlias(n)))) 
                             
  in                            
-   (while not(isEmpty(SelectStack)) do body()) ;
+   (while not(isEmpty(selectStack)) do body()) ;
    tigerset.app coalescedcolor coalescedNodes
  end
     
@@ -340,7 +340,7 @@ end
 *)
 
 type temp = tigertemp.temp
-fun newTempSet () = tigerset.newEmpty String.cmp
+fun newTempSet () = tigerset.newEmpty String.compare
 													 
 
 fun peekorempty table element comparacion = case Polyhash.peek table element  of
@@ -383,12 +383,12 @@ let
 				Polyhash.insert moveList (n, moveList_n)
 			end
 			
-			fun count t = case (Polyhash.peek (t,1)) of SOME d => Polyhash.insert usedefcount (t,d+1)
-			                                          | NONE   => ()
+			fun count t = case (Polyhash.peekInsert  usedefcount (t,1)) of SOME d => Polyhash.insert usedefcount (t,d+1)
+			                                                             | NONE   => ()
 			   
 		in 	
 		    (**)
-		    app count union(use',def');
+		    app count (union(use',def'));
 			(*agregamos nodos a initial *)
 			initial := !(tigerset.union(initial, union(use',def')));
 			(*hacemos el resto del build*)
