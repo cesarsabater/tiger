@@ -7,12 +7,12 @@ sig
 					moves: (tigergraph.node * tigergraph.node) list
 				}
 				
+	type liveness = (tigergraph.node -> tigertemp.temp list) 
+				
  	val interferenceGraph: 
-		tigerflow.flowgraph -> igraph * (tigergraph.node -> tigertemp.temp list) 
+		tigerflow.flowgraph -> igraph * liveness
 	
-	val getPrecoloredNodes :  unit -> tigergraph.node Splayset.set
-	
-    (* debug *)
+	(* debug *)
     val printLiveOut : tigerflow.flowgraph -> unit 		
 	val show : igraph -> unit
 end
