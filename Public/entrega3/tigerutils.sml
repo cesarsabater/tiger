@@ -67,6 +67,8 @@ open tigerassem
 		
 		val instr2string = format (fn t => t)
 		
+		fun allocinstr alloc = format (fn t => (case (Polyhash.peek alloc t) of SOME d => d | NONE => t ))
+		
 		fun code2string [] = ""
 		|   code2string (instr::l) = (instr2string instr)^(code2string l)
 		
@@ -75,5 +77,8 @@ open tigerassem
 			  print (code2string instrlist);
 			  print "\n"
 			)
+			
+		fun printFinal alloc instrlist =  (print "\nCodigo:\n"; 
+			  print (List.foldr (fn (inst,str) => (allocinstr alloc inst)^str) "\n" instrlist )	)
 
 end

@@ -13,5 +13,8 @@ val printCanonFmts: tigerframe.canonfrag list -> unit
 
 val printCode: tigerassem.instr list -> unit
 
+val printFinal : tigercolor.allocation -> tigerassem.instr list -> unit
+
+
 end
 

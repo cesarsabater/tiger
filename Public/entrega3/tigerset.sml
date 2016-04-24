@@ -10,7 +10,9 @@ struct
  
  fun addList (s,l) = s := Splayset.addList(!s,l)
  
- fun delete (s,a) = s := Splayset.delete(!s,a)
+ fun delete (s,a) =  if Splayset.member(!s,a) then
+                        s := Splayset.delete(!s,a)
+                      else ()  
  
  fun member (s,a) = Splayset.member(!s,a)
  

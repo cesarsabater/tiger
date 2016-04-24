@@ -9,6 +9,8 @@ sig
     
    val instrs2graph : tigerassem.instr list ->
                           flowgraph * tigergraph.node list
+                          
+   val debugflowprint : (flowgraph * tigergraph.node list * tigerassem.instr list) -> unit                       
    
 end
 

@@ -8,6 +8,9 @@ open tigerset
 (*KCONST colores*)
 val KCONST = List.length(tigerframe.usable)
 
+fun printWL wl = 
+  List.app (fn tmp => print (tmp^"\n")) (listItems wl)
+
 (*Definiciones de nodos y moves*)
 type node = tigertemp.temp
 type move = (node * node)
@@ -33,14 +36,14 @@ end
 val emptySet : nodeSet = tigerset.newEmpty nodecmp
 
 (*Conjuntos de nodos*)
-val precolored : nodeSet = tigerset.newEmpty nodecmp
-val initial : nodeSet = tigerset.newEmpty nodecmp
+
 
 type allocation = (tigertemp.temp, tigerframe.register) Polyhash.hash_table
 
 
 (*Conjuntos de nodos*)
 val precolored  : nodeSet = nodelist2set tigerframe.usable
+val specialreg : nodeSet = nodelist2set tigerframe.specialregs
 val initial          : nodeSet = tigerset.newEmpty nodecmp
 val simplifyWorklist : nodeSet = tigerset.newEmpty(nodecmp) 
 val freezeWorklist   : nodeSet = tigerset.newEmpty(nodecmp)
@@ -89,11 +92,27 @@ val usedefcount : (node,int) Polyhash.hash_table = Polyhash.mkTable(Polyhash.has
 fun debugfind ht i = case Polyhash.peek ht i of SOME d => d
                                              |  NONE => (print i ; Polyhash.find ht i) 
 
-fun adjacent (v) = difference(debugfind adjList v,union(selectStack,coalescedNodes)) 
 
-fun adj_app v p = tigerset.app (fn x => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then p x else ()) (debugfind adjList v)  
+fun findinitNS ht i = let val ne : nodeSet = newEmpty(nodecmp) in 
+     case Polyhash.peekInsert ht (i,ne) of SOME s => s
+                                         | NONE => ne  
+end
 
-fun adj_fold v f e = tigerset.fold (fn (x,b) => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then f(x,b) else b) e (debugfind adjList v)
+fun findinitI ht i = case Polyhash.peekInsert ht (i,0) of SOME n => n
+                                                         |  NONE => 0
+                                                         
+fun findinitMS ht i = let val ne : moveSet = newEmpty(movecmp) in 
+      case Polyhash.peekInsert ht (i,ne) of SOME s => s
+                                           | NONE => ne  
+end    
+
+
+
+fun adjacent (v) = difference(findinitNS adjList v,union(selectStack,coalescedNodes)) 
+
+fun adj_app v p = tigerset.app (fn x => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then p x else ()) (findinitNS adjList v)  
+
+fun adj_fold v f e = tigerset.fold (fn (x,b) => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then f(x,b) else b) e (findinitNS adjList v)
 
 
 
@@ -120,18 +139,7 @@ fun peekOrEmpty table element comparacion = case Polyhash.peek table element  of
 			 SOME s => s
 			| NONE => tigerset.newEmpty comparacion
 
-fun findinitNS ht i = let val ne : nodeSet = newEmpty(nodecmp) in 
-     case Polyhash.peekInsert ht (i,ne) of SOME s => s
-                                         | NONE => ne  
-end
-
-fun findinitI ht i = case Polyhash.peekInsert ht (i,0) of SOME n => n
-                                                         |  NONE => 0
-                                                         
-fun findinitMS ht i = let val ne : moveSet = newEmpty(movecmp) in 
-      case Polyhash.peekInsert ht (i,ne) of SOME s => s
-                                           | NONE => ne  
-end                                                         
+                                                     
                                                        
 fun AddEdge(u,v) =
    if not(member(adjSet,(u,v))) andalso not(nodeeq(u,v)) then (
@@ -163,7 +171,7 @@ fun EnableMoves n =
 
 
 fun DecrementDegree m  = 
-   let val d = (Polyhash.find degree m) in
+   let val d = (findinitI degree m) in
      Polyhash.insert degree (m,d-1) ;
      if d = KCONST then (
        adj_app m EnableMoves ; 
@@ -192,14 +200,14 @@ fun Simplify () = let val v = tigerset.unElem(simplifyWorklist)
 fun GetAlias (n) = if member(coalescedNodes,n) then GetAlias(Polyhash.find alias n) else n  
 
 fun AddWorkList(u) = 
-   if not(member(precolored,u)) andalso not(MoveRelated(u)) andalso (Polyhash.find degree u < KCONST) then
+   if not(member(precolored,u)) andalso not(MoveRelated(u)) andalso (findinitI degree u < KCONST) then
       (delete(freezeWorklist,u) ;
       add(simplifyWorklist,u)) 
    else ()
 
-fun OKheur (t,r) = (Polyhash.find degree t) < KCONST orelse member(precolored,t) orelse member(adjSet,(t,r)) 
+fun OKheur (t,r) = (findinitI degree t) < KCONST orelse member(precolored,t) orelse member(adjSet,(t,r)) 
 
-fun Conservative (nodes) = let fun count (x,i)  = if (Polyhash.find degree x >= KCONST) then (i+1) else i
+fun Conservative (nodes) = let fun count (x,i)  = if (findinitI degree x >= KCONST) then (i+1) else i
  in
    (tigerset.fold count 0 nodes) < KCONST
  end 
@@ -228,7 +236,7 @@ fun Combine(u,v) = let val movelistu = Polyhash.find moveList u
    Polyhash.insert moveList (u,moveunion) ;
    EnableMoves(v) ;
    adj_app v (fn t => (AddEdge(t,u);DecrementDegree(t)) )  ;
-   if (Polyhash.find degree u >= KCONST) andalso (member(freezeWorklist,u)) then( 
+   if (findinitI degree u >= KCONST) andalso (member(freezeWorklist,u)) then( 
       delete(freezeWorklist,u) ;
       add(spillWorklist,u) ) 
    else ()
@@ -260,7 +268,7 @@ fun FreezeMoves(u) = let fun body (x,y) = let val v = if nodeeq(GetAlias(y),GetA
                           in
                             delete(activeMoves,(x,y)) ;
                             add(frozenMoves,(x,y)) ;
-                            if (isEmpty(NodeMoves(v))) andalso (Polyhash.find degree v < KCONST) then
+                            if (isEmpty(NodeMoves(v))) andalso (findinitI degree v < KCONST) then
                                (delete(freezeWorklist,v) ;
                                add(simplifyWorklist,v))
                             else 
@@ -280,8 +288,13 @@ fun Freeze() = let val u = unElem freezeWorklist
  
  
 (* Spill worklist*) 
-fun spillheuristic() = unElem spillWorklist
+fun spillcost n = Real.fromInt(Polyhash.find usedefcount n) / Real.fromInt(findinitI degree n) 
 
+fun spillheuristic() = let val x = unElem spillWorklist 
+                           val (spillnode, _ ) = fold (fn (n,(min,mincost)) => if (spillcost n < mincost) then (n,spillcost n) else (min,mincost)) (x,spillcost x) spillWorklist
+ in
+    spillnode
+ end
 fun SelectSpill() = let val m = spillheuristic() 
   
   in
@@ -290,26 +303,41 @@ fun SelectSpill() = let val m = spillheuristic()
      FreezeMoves(m)
   end                                      
 
+exception Special
 
 fun AssignColors() = let fun body() = let val n = pop()
-                                          val okColors = newEmpty (String.compare)
-                                          fun rmvColors w = if (member(coloredNodes,GetAlias(w)) orelse
-                                                                member(precolored,GetAlias(w))) then
-                                                                delete(okColors,(Polyhash.find color (GetAlias(w)))) 
-                                                             else () 
+                                          val okColors = nodelist2set tigerframe.usable
+                                          fun rmvColors w = (
+                                                             if (member(coloredNodes,GetAlias(w)) orelse
+                                                                member(precolored,GetAlias(w))) then (
+                                                                
+                                                                let val wcolor = Polyhash.find color (GetAlias(w)) in
+                                                                ( 
+                                                                 (if not(member(specialreg,wcolor)) then delete(okColors,wcolor) else ()) 
+                                                                
+                                                                )
+                                                                end
+                                                                )
+                                                             else () )
                           in
-                            addList(okColors,tigerframe.usable) ;
-                            tigerset.app rmvColors (Polyhash.find adjList n) ;
-                            if isEmpty(okColors) then
-                              add(spilledNodes,n) 
-                            else ( 
-                              add(coloredNodes,n) ;
-                              Polyhash.insert color (n, unElem(okColors)) 
-                             ) 
+                            
+                            if not(member(specialreg,n)) then (
+                              tigerset.app rmvColors (Polyhash.find adjList n) ;
+                              
+                              if isEmpty(okColors) then
+                                add(spilledNodes,n) 
+                              else ( 
+                                add(coloredNodes,n) ;
+                                Polyhash.insert color (n, unElem(okColors)) 
+                              ) )
+                            else ()   
                           end  
                           fun coalescedcolor n = Polyhash.insert color (n,(Polyhash.find color (GetAlias(n)))) 
                             
- in                            
+ in                     
+   print "SelectStack : \n" ;       
+   printWL selectStack ;
+   print "\n\n" ;
    (while not(isEmpty(selectStack)) do body()) ;
    tigerset.app coalescedcolor coalescedNodes
  end
@@ -359,6 +387,8 @@ in
     List.app addMoves moves
 end
 *)
+
+fun printTable ht = Polyhash.apply (fn (x,d) => (print x ; print "->" ; print d ; print "\n" )) ht
 
 type temp = tigertemp.temp
 fun newTempSet () = tigerset.newEmpty String.compare
@@ -439,7 +469,11 @@ let
 	fun printWL wl = 
 		List.app (fn tmp => print (tmp^"\n")) (listItems wl)
 	
+	fun Init () = (app (fn x=> Polyhash.insert color (x,x)) precolored ;
+	               app (fn x=> Polyhash.insert color (x,x)) specialreg )
+	
 in
+    Init () ;
 	Build () ; 
 	print "\n\ninitials:\n" ;
 	printWL initial;
@@ -452,8 +486,11 @@ in
 	printWL freezeWorklist;
 	print "\n\nspill:\n" ;
 	printWL spillWorklist;
-	Loop()(* ;
-	AssignColors() *)
+	Loop()  ; 
+	AssignColors() ;
+	printTable color ;
+	(if notEmpty(spilledNodes) then (print "spilled:\n" ; printWL spilledNodes) else ()) ;
+	color
 end
 
 	

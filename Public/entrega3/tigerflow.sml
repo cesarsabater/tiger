@@ -85,5 +85,33 @@ struct
        (FGRAPH{control = control, def = def, use= use, ismove = ismove}, node_list)
     end     
 
+    exception UnequalLenghts
+    exception ControlUnequal
+    
+    val instr2string = tigerassem.format (fn t => t)
+
+    fun debugflowprint(FGRAPH{control = control,def =def,use = use,ismove = ismove},node_list,instr_list) = 
+       let 
+           val _ = if (List.length(node_list) <> List.length(instr_list)) then (raise (UnequalLenghts)) else ()
+           val _ = if (List.length(nodes(control))) <> List.length(instr_list) then raise (ControlUnequal) else () 
+           
+           fun printtemp t = (print t ; print ",")
+           
+           fun printIsMove b = (if b then print "isMove" else print "notMove")
+           
+           fun printnodeinstr (n,i) = (print (nodename n); print ": " ; print (instr2string i) ;
+                                       print "d," ; List.app printtemp (Splaymap.find(def,n)) ; 
+                                       print "u," ; List.app printtemp (Splaymap.find(use,n)) ; 
+                                       printIsMove (Splaymap.find(ismove,n)) ; print "\n" )
+           fun printEdges n = List.app (fn x => (print (nodename n) ; print " --> " ; print (nodename x) ; print "\n")) (succ n)                              
+           
+       in
+               print "Nodos : \n" ;
+               ListPair.app printnodeinstr (node_list,instr_list) ;
+               print "\n\n Aristas : \n" ;
+               List.app printEdges (nodes control) ;
+               print "\n\n\n"
+       end
+
 end
 

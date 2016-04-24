@@ -94,10 +94,9 @@ let
 	   end
     
 	  | munchStm (MOVE(TEMP t1, e2)) = 
-	     emit(OPER {assem= "mov     'd0, 's0\n",
-	                src = [munchExp e2],
-	                dst = [t1],
-	                jump = NONE })
+	     emit(tigerassem.MOVE {assem= "mov     'd0, 's0\n",
+	                src = munchExp e2,
+	                dst = t1})
 	  | munchStm (MOVE(MEM e1, BINOP(PLUS, CONST i, TEMP sp) )) =  (* i mult de 4 entre 0 y 1020*)
 	     if ((i >= 0) andalso (i <= 1020) andalso (i mod 4 = 0)) then 
 	       (emit(OPER {assem= "str     's0, [sp, #" ^ Int.toString i ^ "]\n",
