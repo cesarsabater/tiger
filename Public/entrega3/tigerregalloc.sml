@@ -11,13 +11,13 @@ open tigerassem
 			let
 				val desp = if mempos<0 then " - " ^ Int.toString(~mempos) else if mempos>0 then " + " ^ Int.toString(mempos) else ""
 			in
-				OPER {assem="str 's0 [falta fp,#" ^ desp ^ "]\n", src=[temp,tigerframe.fp], dst=[], jump=NONE}
+				emit(OPER {assem="str 's0 [falta fp,#" ^ desp ^ "]\n", src=[temp,tigerframe.fp], dst=[], jump=NONE}) 
 			end
    fun fetchTemp(temp, mempos) =
 			let
 				val desp = if mempos<0 then " - " ^ Int.toString(~mempos) else if mempos>0 then " + " ^ Int.toString(mempos) else ""
 			in
-				OPER {assem="ldr 'd0[falta fp,#" ^ desp ^ "]\n", src=[tigerframe.fp], dst=[temp], jump=NONE}
+				emit(OPER {assem="ldr 'd0[falta fp,#" ^ desp ^ "]\n", src=[tigerframe.fp], dst=[temp], jump=NONE})
 			end
    
    (*Spill *)
@@ -39,22 +39,42 @@ open tigerassem
                                               tigerset.add (newTemps,t) ;
                                               emit(fetchStore (t,mempos)) 
                                           end
+          fun genNewTemps (t,(ts,newtmem))  = case (Polyhash.peek offset t) of SOME mempos => 
+                                                                                          (let t' = tigertemp.newtemp() in 
+                                                                                             (tigerset.add (newTemps,t) ; 
+                                                                                             ((t'::ts),(t',mempos)::newtmem)) 
+                                                                                           end)
+                                                                              |NONE        => (t::ts,newtmem)                                  
+                                          
           
-          fun procInstruction (OPER {assem = assem,src = src,dst = dst, jump = jump}) =  let
-                           fun gensrc t = case (Polyhash.peek offset t) of SOME mempos => emitNew fetchTemp mempos
-                                                                          |NONE        => ()
-                           fun gendst t = case (Polyhash.peef offset t) of SOME mempos => emitNew storeTemp mempos
-                                                                          |NONE        => ()                                                                 
-            in
-              List.app gensrc src ;
-              emit(OPER {assem = assem,src = src,dst = dst, jump = jump}) ;
-              List.app gendst dst 
-            end    
+          fun procInstr (OPER  {assem = assem,src = src,dst = dst, jump = jump})  = 
+             let   
+                           
+                           val (src',news) = foldr genNewTemps ([],[]) src
+                           val (dst',newd) = foldr genNewTemps ([],[]) dst                                                                                                                 
+             in
+                List.app fetchTemp news ;
+                emit(OPER {assem = assem,src = src',dst = dst', jump = jump}) ;
+                List.app storeTemp newd
+             end
+          
+          | procInstr (MOVE {assem = assem,src = src, dst = dst}) = 
+             let
+                           val (src',news) = foldr genNewTemps ([],[]) [src]
+                           val (dst',newd) = foldr genNewTemps ([],[]) [dst]     
+             in
+                List.app fetchTemp news ;
+                emit(MOVE {assem = assem,src = List.hd src',dst = List.hd dst'}) ;
+                List.app storeTemp newd
+            end
+          | procInstr a = emit(a)   
+            
+   
       in    
           List.app allocate spilledNodes ;
           
-          List.app procInstruction instrList ;
+          List.app procInstr instrList ;
           
-          (!ilist , newTemps)
+          (rev(!ilist) , newTemps)
       end
 end      
