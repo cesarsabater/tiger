@@ -15,7 +15,7 @@ type moveSet = move set
 type allocation = (tigertemp.temp, tigerframe.register) Polyhash.hash_table
 
 
-fun main (instrlist, frame) = 
+fun getSpilled (instrlist, frame) = 
 let
 
 (*KCONST colores*)
@@ -551,18 +551,26 @@ in
 	Loop()  ; 
 	AssignColors() ;
 	printTable color ;
-	(if notEmpty(spilledNodes) 
+    print "spilled:\n" ;
+    printWL spilledNodes; 
+    (color, spilledNodes)
+	
+end
+
+
+fun main (instrlist, frame) = 
+let
+    val (color, spilledNodes) = getSpilled (instrlist, frame)
+in
+    (if notEmpty(spilledNodes) 
         then
         let
             val (newinstrlist, _ ) = tigerregalloc.spill (spilledNodes,frame, instrlist)
         in
-            (print "spilled:\n" ;
-            printWL spilledNodes; 
-            main (newinstrlist, frame)) 
+            main (newinstrlist, frame)
         end
         else color) 
-end
-
-	
+end    
+    
 end
 
