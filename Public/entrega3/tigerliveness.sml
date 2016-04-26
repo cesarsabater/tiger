@@ -65,7 +65,9 @@ let
         in 
 			( Splaymap.insert(lin,node,inset') , Splaymap.insert(lout,node,outset') )
 		end
+(*
 		val _ = print "liveiter!\n" 
+*)
 		val (livein', liveout') = List.foldr intNode (livein, liveout) (nodes control)
 	in
 		if lmapeq(livein',livein) andalso lmapeq(liveout',liveout) 

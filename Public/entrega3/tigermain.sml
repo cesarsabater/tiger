@@ -53,39 +53,9 @@ fun main(args) =
 		val _ = printCode tempinstructions
 		
 		val _ = List.app (fn pair => let 
-                                val alloc = tigercolor.main pair
-                                val (il, _) = pair
-                            in printFinal alloc il end) tempinstructions
-
-(*
-		val _ = List.app (fn alloc => printFinal alloc tempinstructions) instructions
-*)
-
-(*  
-        val (flowgraph, ilist) = tigerflow.instrs2graph instructions
-		val _ = (print "Flow Graph generado" ; print "\n\n")
-		val tigerflow.FGRAPH{control = cgraph, ...} = flowgraph 
-	 (*	val _ = tigergraph.printGraph  cgraph *)
-	    val _ = tigerflow.debugflowprint (flowgraph,ilist,instructions) 
-*)
-		
-          
-(*
-        val (igraph,liveout) = interferenceGraph flowgraph 
-        val _ = print "Liveout Temps:\n\n\n"
-        val _ = printLiveOut flowgraph
-		val _ = print "Grafo de Interferencia\n\n\n\n"
-        val _ = tigerliveness.show igraph
-*)
-        
-(*
-        val alloc = tigercolor.main liveout (flowgraph,ilist)
-*)
-        
-(*
-        val _ = tigerutils.printFinal alloc instructions
-*)
-        
+                                val (il, alloc) = tigercolor.main pair
+                               in (printFinal alloc il) end) tempinstructions
+                            
 	in
 		print "yes!!\n"
 		

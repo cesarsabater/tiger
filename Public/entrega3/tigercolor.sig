@@ -11,5 +11,5 @@ sig
 				  registers: tigerframe.register list} 
 					-> allocation * tigertemp.temp list
 *)              
-    val main : (tigerassem.instr list * tigerframe.frame) -> allocation
+    val main : (tigerassem.instr list * tigerframe.frame) -> (tigerassem.instr list * allocation)
 end

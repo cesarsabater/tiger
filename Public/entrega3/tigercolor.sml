@@ -345,51 +345,6 @@ fun AssignColors() = let fun body() = let val n = pop()
  end
     
 
-(*
-fun initialize (IGRAPH{graph, tnode, gtemp, moves})  = 
-let
-
-    fun addEdges node = 
-    let
-        val scc = tigergraph.succ node
-        val edges = List.filter (fn x => not (member (precolored, x))) (tigergraph.adj node)
-    in
-        Polyhash.insert adjList (node,nodelist2set edges) ;
-        Polyhash.insert degree (node,length edges) ;
-        List.app (fn x => tigerset.addList(adjSet, [(x, node),(node,x)])) scc
-    end
-   
-*)
-    
-(*    
-    fun addMoves (d,s) = 
-    let
-        val movelistd = (peekorempty moveList d) 
-        val movelists = (peekorempty moveList s)
-    in 
-        tigerset.add(movelistd, (d,s));
-        tigerset.add(movelists, (d,s));
-        tigerset.add(wokrlistMoves, (d,s);
-        Polyhash.insert(d, movelistd);
-        Polyhash.insert(s, movelists);
-    end
-*)
-    
-(*
-    val precoloredList = Splayset.listItems(tigerliveness.getPrecoloredNodes())
-in
-    (* precolored *)
-	tigerset.addList(precolored, precoloredList);
-    (* initial *)
-    tigerset.addList(initial, tigergraph.nodes graph);
-    List.app (fn x => tigerset.delete(initial, x)) precoloredList
-    (* add_tbl (adjList), adjSet y degree *)
-    List.app addEdges (nodes graph)
-    (* moveList y workListmoves *) 
-    List.app addMoves moves
-end
-*)
-
 fun printTable ht = Polyhash.apply (fn (x,d) => (print x ; print "->" ; print d ; print "\n" )) ht
 
 type temp = tigertemp.temp
@@ -465,18 +420,73 @@ end
 		initial := !(difference(initial, precolored))
 	end
 	
-	fun Loop() = let val _ = print "loop\n" in  
+	fun Loop() =   
 	           (if notEmpty(simplifyWorklist) then (Simplify() ; Loop())
              else if notEmpty(worklistMoves) then (Coalesce() ; Loop())
              else if notEmpty(freezeWorklist) then (Freeze() ; Loop())
              else if notEmpty(spillWorklist) then (SelectSpill(); Loop())
              else ())	
-    end
 
 	fun printWL wl = 
 		List.app (fn tmp => print (tmp^"\n")) (listItems wl)
 	
     
+
+	fun Init () = (
+(*
+                    cleanTables (); 
+*)
+                   app (fn x=> Polyhash.insert color (x,x)) precolored ;
+	               app (fn x=> Polyhash.insert color (x,x)) specialreg )
+	
+in
+    Init () ;
+	Build () ; 
+(*
+	print "\n\ninitials:\n" ;
+	printWL initial;
+	print "\n\nprecolored:\n" ;
+	printWL precolored;
+*)
+	MakeWorklist ()  ;
+(*
+	print "\n\nsimplify:\n" ;
+	printWL simplifyWorklist;
+	print "\n\nfreeze:\n" ;
+	printWL freezeWorklist;
+	print "\n\nspill:\n" ;
+	printWL spillWorklist;
+*)
+	Loop()  ; 
+	AssignColors() ;
+	printTable color ;
+    print "spilled:\n" ;
+    printWL spilledNodes; 
+    (color, spilledNodes)
+	
+end
+
+
+fun main (instrlist, frame) = 
+let
+    val (color, spilledNodes) = getSpilled (instrlist, frame)
+in
+    (if notEmpty(spilledNodes) 
+        then
+        let
+            val (newinstrlist, _ ) = tigerregalloc.spill (spilledNodes,frame, instrlist)
+        in
+            main (newinstrlist, frame)
+        end
+        else (instrlist, color)) 
+end    
+    
+end
+
+
+
+
+
 (*
     
     fun cleanTables () =
@@ -525,52 +535,4 @@ val color : (node,tigertemp.temp) Polyhash.hash_table = Polyhash.mkTable(Polyhas
 val usedefcount : (node,int) Polyhash.hash_table = Polyhash.mkTable(Polyhash.hash,nodeeq) (1000,ErrorCount)
 
 *)
-
-
-	fun Init () = (
-(*
-                    cleanTables (); 
-*)
-                   app (fn x=> Polyhash.insert color (x,x)) precolored ;
-	               app (fn x=> Polyhash.insert color (x,x)) specialreg )
-	
-in
-    Init () ;
-	Build () ; 
-	print "\n\ninitials:\n" ;
-	printWL initial;
-	print "\n\nprecolored:\n" ;
-	printWL precolored;
-	MakeWorklist ()  ;
-	print "\n\nsimplify:\n" ;
-	printWL simplifyWorklist;
-	print "\n\nfreeze:\n" ;
-	printWL freezeWorklist;
-	print "\n\nspill:\n" ;
-	printWL spillWorklist;
-	Loop()  ; 
-	AssignColors() ;
-	printTable color ;
-    print "spilled:\n" ;
-    printWL spilledNodes; 
-    (color, spilledNodes)
-	
-end
-
-
-fun main (instrlist, frame) = 
-let
-    val (color, spilledNodes) = getSpilled (instrlist, frame)
-in
-    (if notEmpty(spilledNodes) 
-        then
-        let
-            val (newinstrlist, _ ) = tigerregalloc.spill (spilledNodes,frame, instrlist)
-        in
-            main (newinstrlist, frame)
-        end
-        else color) 
-end    
-    
-end
 
