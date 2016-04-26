@@ -52,11 +52,9 @@ fun main(args) =
 		val tempinstructions = geninstr canonfmts
 		val _ = printCode tempinstructions
 		
-		
-		val instructions = List.map (fn pair => tigerregalloc.alloc pair) tempinstructions
+		val instructions = List.map (fn pair => tigercolor.main pair) tempinstructions
 		val _ = List.app (fn (alloc, instrlist) => printFinal alloc instrlist) instructions
 (*  
-	(* 	esto al final lo hacemos en tigerregalloc:  *)
         val (flowgraph, ilist) = tigerflow.instrs2graph instructions
 		val _ = (print "Flow Graph generado" ; print "\n\n")
 		val tigerflow.FGRAPH{control = cgraph, ...} = flowgraph 

@@ -410,8 +410,14 @@ in
 	tigerset.app selectWL initial
 end
 
-fun main liveout (tigerflow.FGRAPH{control, def, use, ismove}, ilist) = 
+fun main (instrlist, frame) = 
 let
+	(* flowgraph *)
+	val (flowgraph, ilist) = tigerflow.instrs2graph instrlist
+	(tigerflow.FGRAPH{control, def, use, ismove}) = flowgraph
+	(* liveness analysis*)
+	val (_,liveout) = tigerliveness.interferenceGraph flowgraph
+	
 	fun Build () = 
 	let
 		(* valores vivos en cada instruccion, empezando por la ultima *)
