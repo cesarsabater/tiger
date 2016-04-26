@@ -53,7 +53,9 @@ fun main(args) =
 		val _ = printCode tempinstructions
 		
 		val instructions = List.map (fn pair => tigercolor.main pair) tempinstructions
+(*
 		val _ = List.app (fn (alloc, instrlist) => printFinal alloc instrlist) instructions
+*)
 (*  
         val (flowgraph, ilist) = tigerflow.instrs2graph instructions
 		val _ = (print "Flow Graph generado" ; print "\n\n")

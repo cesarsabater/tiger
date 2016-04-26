@@ -11,7 +11,9 @@ val printFragments: tigerframe.frag list -> unit
 
 val printCanonFmts: tigerframe.canonfrag list -> unit
 
+(*
 val printFragmentCode: tigerassem.instr list -> unit
+*)
 
 val printCode: (tigerassem.instr list * tigerframe.frame) list -> unit
 

@@ -60,7 +60,7 @@ open tigerassem
 		|   geninstr1 frame (st::stl) = (codegen frame st)@(geninstr1 frame stl) 
 		
 		fun geninstr [] = []
-		|   geninstr (tigerframe.CANONPROC {body, frame}::l) = genLabel(tigerframe.name frame) :: (((geninstr1 frame body), frame)::(geninstr l))
+		|   geninstr (tigerframe.CANONPROC {body, frame}::l) =  (((genLabel(tigerframe.name frame))::(geninstr1 frame body), frame)::(geninstr l))
 		|   geninstr (tigerframe.CANONSTRING (l,s)::cfl) = geninstr cfl
 		
 		val instr2string = format (fn t => t)
@@ -71,10 +71,9 @@ open tigerassem
 		|   code2string (instr::l) = (instr2string instr)^(code2string l)
 		
 		fun printCode chunks =
-			print "\nCodigo:\n"; 
-			List.app (fn (instrlist, frm) => 
-			  print (code2string instrlist);
-			  print "\n") chunks
+			( print "\nCodigo:\n";
+			 (List.app (fn (instrlist, frm) => 
+                        ( print (code2string instrlist); print "\n")) chunks ) )
 			
 		fun printFinal alloc instrlist =  (print "\nCodigo:\n"; 
 			  print (List.foldr (fn (inst,str) => (allocinstr alloc inst)^str) "\n" instrlist )	)

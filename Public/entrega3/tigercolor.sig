@@ -11,5 +11,5 @@ sig
 				  registers: tigerframe.register list} 
 					-> allocation * tigertemp.temp list
 *)              
-    val main : tigerliveness.liveness -> (tigerflow.flowgraph * tigergraph.node list) -> allocation
+    val main : (tigerassem.instr list * tigerframe.frame) -> allocation
 end

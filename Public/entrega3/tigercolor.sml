@@ -5,17 +5,26 @@ open tigerpila
 open tigerliveness
 open tigerset
 
+(*Definiciones de nodos y moves*)
+type node = tigertemp.temp
+type move = (node * node)
+type nodeSet = node set
+type moveSet = move set
+
+
+type allocation = (tigertemp.temp, tigerframe.register) Polyhash.hash_table
+
+
+fun main (instrlist, frame) = 
+let
+
 (*KCONST colores*)
 val KCONST = List.length(tigerframe.usable)
 
 fun printWL wl = 
   List.app (fn tmp => print (tmp^"\n")) (listItems wl)
 
-(*Definiciones de nodos y moves*)
-type node = tigertemp.temp
-type move = (node * node)
-type nodeSet = node set
-type moveSet = move set
+
 
 fun nodeeq (a,b) = (String.compare(a,b) = EQUAL)
 fun nodecmp (a,b) = String.compare(a,b)
@@ -37,8 +46,6 @@ val emptySet : nodeSet = tigerset.newEmpty nodecmp
 
 (*Conjuntos de nodos*)
 
-
-type allocation = (tigertemp.temp, tigerframe.register) Polyhash.hash_table
 
 
 (*Conjuntos de nodos*)
@@ -92,7 +99,6 @@ val usedefcount : (node,int) Polyhash.hash_table = Polyhash.mkTable(Polyhash.has
 fun debugfind ht i = case Polyhash.peek ht i of SOME d => d
                                              |  NONE => (print i ; Polyhash.find ht i) 
 
-
 fun findinitNS ht i = let val ne : nodeSet = newEmpty(nodecmp) in 
      case Polyhash.peekInsert ht (i,ne) of SOME s => s
                                          | NONE => ne  
@@ -113,9 +119,6 @@ fun adjacent (v) = difference(findinitNS adjList v,union(selectStack,coalescedNo
 fun adj_app v p = tigerset.app (fn x => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then p x else ()) (findinitNS adjList v)  
 
 fun adj_fold v f e = tigerset.fold (fn (x,b) => if not(tigerset.member(selectStack,x) orelse tigerset.member(coalescedNodes,x)) then f(x,b) else b) e (findinitNS adjList v)
-
-
-
 
 fun push v = (pushPila selectPila v ; tigerset.add (selectStack,v))
              
@@ -410,11 +413,10 @@ in
 	tigerset.app selectWL initial
 end
 
-fun main (instrlist, frame) = 
-let
+
 	(* flowgraph *)
 	val (flowgraph, ilist) = tigerflow.instrs2graph instrlist
-	(tigerflow.FGRAPH{control, def, use, ismove}) = flowgraph
+	val (tigerflow.FGRAPH{control, def, use, ismove}) = flowgraph
 	(* liveness analysis*)
 	val (_,liveout) = tigerliveness.interferenceGraph flowgraph
 	
@@ -475,7 +477,62 @@ let
 	fun printWL wl = 
 		List.app (fn tmp => print (tmp^"\n")) (listItems wl)
 	
-	fun Init () = (app (fn x=> Polyhash.insert color (x,x)) precolored ;
+    
+(*
+    
+    fun cleanTables () =
+    let
+        fun vaciarTabla tbl = Polyhash.filter (fn _ => false) tbl
+        
+    in
+        precolored       := nodelist2set tigerframe.usable ;
+        specialreg       := nodelist2set tigerframe.specialregs ;
+        initial          := tigerset.newEmpty nodecmp ;
+        simplifyWorklist := tigerset.newEmpty(nodecmp)  ;
+        reezeWorklist    := tigerset.newEmpty(nodecmp)  ;
+        spillWorklist    := tigerset.newEmpty(nodecmp)  ;
+        spilledNodes     := tigerset.newEmpty(nodecmp)  ;
+        coalescedNodes   := tigerset.newEmpty(nodecmp)  ;
+        coloredNodes     := tigerset.newEmpty(nodecmp)  ;
+        (*Pila y conjunto*)
+        selectStack      := tigerset.newEmpty(nodecmp)  ;
+        selectPila       := nuevaPila() ;
+        (*Conjuntos de moves*)
+        worklistMoves    := tigerset.newEmpty(movecmp) ;
+        activeMoves      := tigerset.newEmpty(movecmp) ;
+        frozenMoves      := tigerset.newEmpty(movecmp) ;
+        constrainedMoves := tigerset.newEmpty(movecmp) ;
+        coalescedMoves   := tigerset.newEmpty(movecmp) 
+        
+        degree : (node,int) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,ErrorDegree) 
+
+        adjSet         := tigerset.newEmpty movecmp
+
+    
+
+val adjList : (node,nodeSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,ErrorAdjList) 
+
+val moveList : (node,moveSet) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,ErrorMoveList)
+
+val alias : (node,node) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,ErrorAlias)
+(*
+
+(* revisar tipo de color *)
+val nodeColor : (node,tigertemp.temp) Polyhash.hash_table = Polyhash.mkTable (Polyhash.hash,nodeeq) (1000,NotFound)
+*)
+
+val color : (node,tigertemp.temp) Polyhash.hash_table = Polyhash.mkTable(Polyhash.hash,nodeeq) (1000,ErrorColor)
+
+val usedefcount : (node,int) Polyhash.hash_table = Polyhash.mkTable(Polyhash.hash,nodeeq) (1000,ErrorCount)
+
+*)
+
+
+	fun Init () = (
+(*
+                    cleanTables (); 
+*)
+                   app (fn x=> Polyhash.insert color (x,x)) precolored ;
 	               app (fn x=> Polyhash.insert color (x,x)) specialreg )
 	
 in
