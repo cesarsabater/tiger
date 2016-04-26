@@ -142,8 +142,7 @@ fun peekOrEmpty table element comparacion = case Polyhash.peek table element  of
 			 SOME s => s
 			| NONE => tigerset.newEmpty comparacion
 
-                                                     
-                                                       
+
 fun AddEdge(u,v) =
    if not(member(adjSet,(u,v))) andalso not(nodeeq(u,v)) then (
       addList(adjSet,[(u,v),(v,u)]) ; (
@@ -552,8 +551,16 @@ in
 	Loop()  ; 
 	AssignColors() ;
 	printTable color ;
-	(if notEmpty(spilledNodes) then (print "spilled:\n" ; printWL spilledNodes) else ()) ;
-	color
+	(if notEmpty(spilledNodes) 
+        then
+        let
+            val (newinstrlist, _ ) = tigerregalloc.spill (spilledNodes,frame, instrlist)
+        in
+            (print "spilled:\n" ;
+            printWL spilledNodes; 
+            main (newinstrlist, frame)) 
+        end
+        else color) 
 end
 
 	
