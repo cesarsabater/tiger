@@ -71,7 +71,7 @@ open tigerassem
             
    
       in    
-          List.app allocate spilledNodes ;
+          tigerset.app allocate spilledNodes ;
           
           List.app procInstr instrList ;
           
