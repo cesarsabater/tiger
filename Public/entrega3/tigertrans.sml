@@ -23,7 +23,7 @@ fun newLevel{parent={parent, frame, level}, name, formals} =
 	{
 		(* consultar si esto está bien! como hacer newLevel!! *)
 		parent=SOME frame,
-		frame=newFrame{name=name, formals=true::formals},
+		frame=newFrame{name=name, formals=true::formals}, (* acá se agrega el static link *)
 		level=level+1
 	}
 fun allocArg{parent, frame, level} b = tigerframe.allocArg frame b

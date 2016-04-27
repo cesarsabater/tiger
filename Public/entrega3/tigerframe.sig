@@ -9,7 +9,7 @@ val fp : tigertemp.temp
 val sp : tigertemp.temp		(* stack pointer *)
 val lr : tigertemp.temp		(* link register *) 
 val pc : tigertemp.temp		(* program counter *)
-datatype access = InFrame of int | InReg of tigertemp.label
+datatype access = InFrame of int | InReg of tigertemp.temp
 val fpPrev : int
 val fpPrevLev : int
 val newFrame : {name: tigertemp.label, formals: bool list} -> frame

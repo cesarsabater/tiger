@@ -47,6 +47,8 @@ val calleesaves = ["r4","r5","r6","r7","r8","r9","r10","r11"]
 (*
 val usable = ["r0","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10","r11"]
 *)
+datatype access = InFrame of int | InReg of tigertemp.label
+
 val usable = ["r0", "r1"];
 type frame = {
 	name: string,
@@ -54,39 +56,52 @@ type frame = {
 	locals: bool list,
 	actualArg: int ref,
 	actualLocal: int ref,
-	actualReg: int ref
+	actualReg: int ref, 
+	argsAcc: (access list) ref
 }
 
 type register = string
-datatype access = InFrame of int | InReg of tigertemp.label
+
 datatype frag = PROC of {body: tigertree.stm, frame: frame}
 	| STRING of tigertemp.label * string
 datatype canonfrag = 
     CANONPROC of {body: tigertree.stm list, frame: frame}
     | CANONSTRING of tigertemp.label * string
 
-fun newFrame{name, formals} = {
-	name=name,
-	formals=formals,
-	locals=[],
-	actualArg=ref argsInicial,
-	actualLocal=ref localsInicial,
-	actualReg=ref regInicial
-}
-fun name(f: frame) = #name f
-fun string(l, s) = l^tigertemp.makeString(s)^"\n"(* PARA QUE ESTA ESTO *)
-fun formals({formals=f, ...}: frame) = 
-	let	fun aux(n, []) = []
-		| aux(n, h::t) = InFrame(n)::aux(n+argsGap, t)
-	in aux(argsInicial, f) end
-fun maxRegFrame(f: frame) = !(#actualReg f)
 fun allocArg (f: frame) b = 
 	case b of
 	true =>
 		let	val ret = (!(#actualArg f)+argsOffInicial)*wSz
 			val _ = #actualArg f := !(#actualArg f)+1
 		in	InFrame ret end
-	| false => InReg(tigertemp.newtemp())
+	
+	| false =>  InReg(tigertemp.newtemp())
+
+fun newFrame{name, formals} = 
+let
+	val f = {	name=name,
+				formals=formals,
+				locals=[],
+				actualArg=ref argsInicial,
+				actualLocal=ref localsInicial,
+				actualReg=ref regInicial,
+				argsAcc = ref ([] : (access list)) 
+			}
+     val _ = (#argsAcc f := (List.map (fn b => allocArg f b) formals))
+in 
+	f 
+end
+
+fun name(f: frame) = #name f
+fun string(l, s) = l^tigertemp.makeString(s)^"\n"(* PARA QUE ESTÁ ESTO? *)
+fun formals({argsAcc, ...}: frame) = !argsAcc
+(*
+	let	fun aux(n, []) = []
+		| aux(n, h::t) = InFrame(n)::aux(n+argsGap, t)
+	in aux(argsInicial, f) end
+*)
+fun maxRegFrame(f: frame) = !(#actualReg f)
+
 fun allocLocal (f: frame) b = 
 	case b of
 	true =>
