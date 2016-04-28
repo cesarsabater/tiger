@@ -121,19 +121,32 @@ fun seq [] = EXP (CONST 0)
 	| seq [s] = s
 	| seq (x::xs) = SEQ (x, seq xs)
 
-fun procEntryExit1 (fr : frame,body) =  
+fun procEntryExit1 (fr : frame, body) =  
 let 
-	(* esto hay que hacerlo acá porque lo dice el libro *) 
 	val argsAcc = #argsAcc fr
 	fun aux [] _ = []
-	|   aux (acc::accs) n = 
-			tigertree.MOVE( exp acc (TEMP fp), if n < List.length argregs 
-									then TEMP (List.nth(argregs,n)) 
-									else MEM(BINOP(PLUS, CONST ((n-List.length argregs)*8+16), TEMP fp)) ) :: aux accs (n+1)
-	val moveargs = aux (!argsAcc) 0 (*Instrucciones para mover de los argumentos a los locals donde la función ve internamente las cosas *)
-	val freshtmps = List.tabulate (List.length calleesaves , fn _ => TEMP (tigertemp.newtemp()))
-	val saveregs = List.map MOVE (ListPair.zip(freshtmps,List.map TEMP calleesaves)) (* Instrucciones para salvar en temporarios los callee saves *)
-	val restoreregs = List.map MOVE(ListPair.zip(List.map TEMP calleesaves,freshtmps)) (* Restaurar los callee saves *)
+	|   aux (acc::accs) n = if n < List.length argregs 
+			then tigertree.MOVE(exp acc (TEMP fp), 
+							TEMP (List.nth(argregs,n))) :: aux accs (n+1) 
+			else if not (List.nth ((#formals fr), n)) then (* si no escapa la copiamos a un temp *) 
+			let 
+				val varoffset = CONST (((n - List.length argregs)+localsGap)*wSz)
+				val src = MEM(BINOP(PLUS, varoffset, TEMP fp)) 
+			in
+				tigertree.MOVE(exp acc (TEMP fp), src) :: aux accs (n+1)
+			end
+			else aux accs (n+1) (* si escapa y no esta en registro, no hacemos nada *) 
+
+	val moveargs = aux (!argsAcc) 0 (*Instrucciones para mover de los 
+										argumentos a los locals donde la 
+										función ve internamente las cosas *)
+	val freshtmps = List.tabulate (List.length calleesaves, 
+									fn _ => TEMP (tigertemp.newtemp()))
+	val moves = ListPair.zip(freshtmps, List.map TEMP calleesaves)
+	val saveregs = List.map MOVE moves (* Instrucciones para salvar en temporarios los callee saves *)
+	
+	val revmoves = List.map (fn(x,y) => (y,x)) moves
+	val restoreregs = List.map MOVE(revmoves) (* Restaurar los callee saves *)
 in 
 	seq( saveregs @ moveargs @ [body] @ restoreregs ) 
 end
