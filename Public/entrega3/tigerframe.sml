@@ -18,7 +18,6 @@
 structure tigerframe :> tigerframe = struct
 
 open tigertree
-open tigerassem
 
 type level = int
 
@@ -44,12 +43,13 @@ val specialregs = [fp, sp, lr, pc]
 val argregs = [rv, "r1", "r2", "r3"]
 val callersaves = ["r0","r1","r2","r3"]
 val calleesaves = ["r4","r5","r6","r7","r8","r9","r10","r11"]
-(*
 val usable = ["r0","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10","r11"]
-*)
 datatype access = InFrame of int | InReg of tigertemp.label
 
+(*
 val usable = ["r0", "r1"];
+*)
+
 type frame = {
 	name: string,
 	formals: bool list,
@@ -112,9 +112,32 @@ fun exp(InFrame k) e = MEM(BINOP(PLUS, e, CONST k))
 	| exp(InReg l) _ = TEMP l
 fun externalCall(s, l) = CALL(NAME s, l)
 
+
+(*
 fun procEntryExit1 (frame,body) = body
+*)
+
+fun seq [] = EXP (CONST 0)
+	| seq [s] = s
+	| seq (x::xs) = SEQ (x, seq xs)
+
+fun procEntryExit1 (fr : frame,body) =  
+let 
+	val argsAcc = #argsAcc fr
+	fun aux [] _ = []
+	|   aux (acc::accs) n = 
+			tigertree.MOVE( exp acc (TEMP fp), if n < List.length argregs 
+									then TEMP (List.nth(argregs,n)) 
+									else MEM(BINOP(PLUS, CONST ((n-List.length argregs)*8+16), TEMP fp)) ) :: aux accs (n+1)
+	val moveargs = aux (!argsAcc) 0 (*Instrucciones para mover de los argumentos a los locals donde la función ve internamente las cosas *)
+	val freshtmps = List.tabulate (List.length calleesaves , fn _ => TEMP (tigertemp.newtemp()))
+	val saveregs = List.map MOVE (ListPair.zip(freshtmps,List.map TEMP calleesaves)) (* Instrucciones para salvar en temporarios los callee saves *)
+	val restoreregs = List.map MOVE(ListPair.zip(List.map TEMP calleesaves,freshtmps)) (* Restaurar los callee saves *)
+in 
+	seq( saveregs @ moveargs @ [body] @ restoreregs ) 
+end
 
 fun procEntryExit2 (frame, body) = 
-	body @ [ OPER{assem="", src=[rv,sp] @ calleesaves, dst=[], jump=SOME[]}]
+	body @ [ tigerassem.OPER{assem="", src=[rv,sp] @ calleesaves, dst=[], jump=SOME[]}]
 
 end

@@ -127,5 +127,6 @@ tigertab.uo: tigertab.ui
 tigersimpleregalloc.uo: tigersimpleregalloc.ui tigerassem.ui 
 tigerutils.uo: tigerutils.ui tigercodegen.ui tigerframe.ui tigerit.uo \
     tigercanon.ui tigerassem.ui tigertrans.ui 
-tigerframe.uo: tigerframe.ui tigertree.uo tigerassem.ui tigertemp.ui 
+tigerframe.uo: tigerframe.ui tigertree.uo tigerassem.ui tigertemp.ui \
+    tigertrans.ui 
 tigertree.uo: tigertemp.ui 

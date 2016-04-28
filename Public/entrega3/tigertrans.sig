@@ -30,6 +30,7 @@ val callExp : tigertemp.label * bool * bool * level * exp list -> exp
 val letExp : tigertree.stm list * exp -> exp
 val breakExp : unit -> exp
 val seqExp : exp list -> exp
+val seq: tigertree.stm list -> tigertree.stm
 val preWhileForExp : unit -> unit
 val postWhileForExp : unit -> unit
 val whileExp : {test: exp, body: exp, lev:level} -> exp
