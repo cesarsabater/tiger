@@ -123,6 +123,7 @@ fun seq [] = EXP (CONST 0)
 
 fun procEntryExit1 (fr : frame,body) =  
 let 
+	(* esto hay que hacerlo acá porque lo dice el libro *) 
 	val argsAcc = #argsAcc fr
 	fun aux [] _ = []
 	|   aux (acc::accs) n = 
