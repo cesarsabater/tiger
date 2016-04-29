@@ -52,9 +52,10 @@ fun main(args) =
 		val tempinstructions = geninstr canonfmts
 		val _ = printCode tempinstructions
 		
-		val _ = List.app (fn pair => let 
-                                val (il, alloc) = tigercolor.main pair
-                               in (printFinal alloc il) end) tempinstructions
+		val _ = List.app (fn (instrlist, frame) => let 
+                                val (il, alloc) = tigercolor.main (instrlist, frame)
+                                val {prolog, body, epilog} = tigerframe.procEntryExit3 (frame, il)
+                               in print prolog; (printFinal alloc il); print epilog end) tempinstructions
                             
 	in
 		print "yes!!\n"

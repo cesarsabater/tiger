@@ -337,9 +337,11 @@ fun AssignColors() = let fun body() = let val n = pop()
                           fun coalescedcolor n = Polyhash.insert color (n,(Polyhash.find color (GetAlias(n)))) 
                             
  in                     
+(*
    print "SelectStack : \n" ;       
    printWL selectStack ;
    print "\n\n" ;
+*)
    (while not(isEmpty(selectStack)) do body()) ;
    tigerset.app coalescedcolor coalescedNodes
  end
@@ -459,7 +461,9 @@ in
 *)
 	Loop()  ; 
 	AssignColors() ;
+(*
 	printTable color ;
+*)
     print "spilled:\n" ;
     printWL spilledNodes; 
     (color, spilledNodes)
@@ -482,8 +486,6 @@ in
 end    
     
 end
-
-
 
 
 

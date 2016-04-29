@@ -37,6 +37,7 @@ val argsOffInicial = 0		(* words *)
 val argsGap = wSz			(* bytes *)
 val regInicial = 1			(* reg *)
 val localsInicial = 0		(* words *)
+val numLocalsInicial = 0    (* sreg *)
 val localsGap = ~4 			(* bytes *)
 val calldefs = [rv]
 val specialregs = [fp, sp, lr, pc]
@@ -51,13 +52,14 @@ val usable = ["r0", "r1"];
 *)
 
 type frame = {
-	name: string,
-	formals: bool list,
-	locals: bool list,
-	actualArg: int ref,
-	actualLocal: int ref,
-	actualReg: int ref, 
-	argsAcc: (access list) ref
+	name : string,
+	formals : bool list,
+	locals : bool list,
+	actualArg : int ref,
+	actualLocal : int ref,
+	actualReg : int ref, 
+    localsInFrame : int ref, 
+	argsAcc : (access list) ref
 }
 
 type register = string
@@ -79,35 +81,44 @@ fun allocArg (f: frame) b =
 
 fun newFrame{name, formals} = 
 let
-	val f = {	name=name,
+	val newframe = {	name=name,
 				formals=formals,
 				locals=[],
 				actualArg=ref argsInicial,
 				actualLocal=ref localsInicial,
 				actualReg=ref regInicial,
+                localsInFrame = ref numLocalsInicial,
 				argsAcc = ref ([] : (access list)) 
 			}
-     val _ = (#argsAcc f := (List.map (fn b => allocArg f b) formals))
-in 
-	f 
+            
+     val _ = (#argsAcc newframe := (List.map (fn b => allocArg newframe b) formals))
+in
+	newframe
 end
 
 fun name(f: frame) = #name f
 fun string(l, s) = l^tigertemp.makeString(s)^"\n"(* PARA QUE ESTÁ ESTO? *)
 fun formals({argsAcc, ...}: frame) = !argsAcc
+
 (*
 	let	fun aux(n, []) = []
 		| aux(n, h::t) = InFrame(n)::aux(n+argsGap, t)
 	in aux(argsInicial, f) end
 *)
+
 fun maxRegFrame(f: frame) = !(#actualReg f)
 
 fun allocLocal (f: frame) b = 
-	case b of
-	true =>
-		let	val ret = InFrame(!(#actualLocal f)+localsGap)
-		in	#actualLocal f:=(!(#actualLocal f)+localsGap); ret end (* esto está modificado, hay que verificar que esté bien! *)
-	| false => InReg(tigertemp.newtemp())
+    case b of
+        true =>
+            let	val ret = InFrame(!(#actualLocal f)+localsGap)
+            in	
+                #localsInFrame f := !(#localsInFrame f)+1;
+                #actualLocal f:=(!(#actualLocal f)+localsGap); 
+                ret
+            end (* esto está modificado, hay que verificar que esté bien! *)
+        | false => InReg(tigertemp.newtemp())
+    
 fun exp(InFrame k) e = MEM(BINOP(PLUS, e, CONST k))
 	| exp(InReg l) _ = TEMP l
 fun externalCall(s, l) = CALL(NAME s, l)
@@ -120,6 +131,17 @@ fun procEntryExit1 (frame,body) = body
 fun seq [] = EXP (CONST 0)
 	| seq [s] = s
 	| seq (x::xs) = SEQ (x, seq xs)
+
+fun mkpushlist [] = "{}"
+|   mkpushlist (x::xs) = 
+    let
+        fun mkpushlist1 [] = "" 
+        |   mkpushlist1 (t::ts) = ","^t^(mkpushlist1 ts)
+    in 
+        "{"^x^(mkpushlist1 xs)^"}" 
+    end
+
+
 
 fun procEntryExit1 (fr : frame, body) =  
 let 
@@ -146,12 +168,27 @@ let
 	val saveregs = List.map MOVE moves (* Instrucciones para salvar en temporarios los callee saves *)
 	
 	val revmoves = List.map (fn(x,y) => (y,x)) moves
-	val restoreregs = List.map MOVE(revmoves) (* Restaurar los callee saves *)
+	val restoreregs = List.map MOVE revmoves (* Restaurar los callee saves *)
 in 
-	seq( saveregs @ moveargs @ [body] @ restoreregs ) 
+	seq( (*saveregs @ *) moveargs @ [body] (* @ restoreregs*) ) 
 end
 
 fun procEntryExit2 (frame, body) = 
 	body @ [ tigerassem.OPER{assem="", src=[rv,sp] @ calleesaves, dst=[], jump=SOME[]}]
 
+
+fun procEntryExit3 (frame:frame,instrs) = {prolog = ".global " ^ #name frame ^ "\n" ^
+                                                   "\t" ^ #name frame ^ ":\n" ^  
+                                                   "\t#prologo:\n"^
+                                                   "\tpush "^mkpushlist (calleesaves@[lr])^"\n"^
+                                                   "\taddq $"^(Int.toString (!(#localsInFrame frame) * wSz * (~1)))^", sp\n\n",
+                                    body = instrs,
+                                    epilog = "\t#END "^(#name frame)^"\n"^
+                                             "\taddq $"^(Int.toString (!(#localsInFrame frame) * wSz))^", sp\n\n"^
+                                             "\tpop "^mkpushlist (pc::(rev calleesaves))^"\n"
+                                             }
+
+
 end
+
+
