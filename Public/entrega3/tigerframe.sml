@@ -184,6 +184,7 @@ fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\n\n\n\n\t#prologo:\n"^
                                                    "\t" ^ #name frame ^ ":\n" ^  
                                                    
                                                    "\tpush "^mkpushlist (calleesaves@[lr])^"\n"^
+                                                   "\tmov     r11,sp\n" ^ 
                                                    "\tsub     sp, $"^(Int.toString (!(#localsInFrame frame) * wSz ))^"\n\n",
                                     body = instrs,
                                     epilog = "\tadd     sp, $"^(Int.toString (!(#localsInFrame frame) * wSz))^"\n"^
