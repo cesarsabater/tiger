@@ -21,11 +21,11 @@ open tigertree
 
 type level = int
 
-val fp = "fp"				(* frame pointer *)
+val fp = "r11"				(* frame pointer *)
 val rv = "r0"				(* return value  *) 
-val sp = "r13"				(* stack pointer *)
-val lr = "r14"				(* link register *) 
-val pc = "r15" 				(* program counter *)
+val sp = "sp"				(* stack pointer *)
+val lr = "lr"				(* link register *) 
+val pc = "pc"  				(* program counter *)
 val ov = "OV"				(* overflow value (edx en el 386) *)
 val wSz = 4					(* word size in bytes *)
 val log2WSz = 2				(* base two logarithm of word size in bytes *)
@@ -44,7 +44,7 @@ val specialregs = [fp, sp, lr, pc]
 val argregs = [rv, "r1", "r2", "r3"]
 val callersaves = ["r0","r1","r2","r3"]
 val calleesaves = ["r4","r5","r6","r7","r8","r9","r10","r11"]
-val usable = ["r0","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10","r11"]
+val usable = ["r0","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10"]
 datatype access = InFrame of int | InReg of tigertemp.label
 
 type frame = {
@@ -187,7 +187,7 @@ fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\n\n\n\n\t#prologo:\n"^
                                                    "\tsub     sp, $"^(Int.toString (!(#localsInFrame frame) * wSz ))^"\n\n",
                                     body = instrs,
                                     epilog = "\tadd     sp, $"^(Int.toString (!(#localsInFrame frame) * wSz))^"\n"^
-                                             "\tpop "^mkpushlist (pc::(rev calleesaves))^"\n"^
+                                             "\tpop "^mkpushlist (calleesaves@[pc])^"\n"^
                                              "\t#epilogo: "^(#name frame)^"\n"
                                              }
 
