@@ -177,15 +177,16 @@ fun procEntryExit2 (frame, body) =
 	body @ [ tigerassem.OPER{assem="", src=[rv,sp] @ calleesaves, dst=[], jump=SOME[]}]
 
 
-fun procEntryExit3 (frame:frame,instrs) = {prolog = ".global " ^ #name frame ^ "\n" ^
+fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\n\n\n\n\t#prologo:\n"^
+                                                    ".global " ^ #name frame ^ "\n" ^
                                                    "\t" ^ #name frame ^ ":\n" ^  
-                                                   "\t#prologo:\n"^
+                                                   
                                                    "\tpush "^mkpushlist (calleesaves@[lr])^"\n"^
-                                                   "\taddq $"^(Int.toString (!(#localsInFrame frame) * wSz * (~1)))^", sp\n\n",
+                                                   "\tadd $"^(Int.toString (!(#localsInFrame frame) * wSz * (~1)))^", sp\n\n",
                                     body = instrs,
-                                    epilog = "\t#END "^(#name frame)^"\n"^
-                                             "\taddq $"^(Int.toString (!(#localsInFrame frame) * wSz))^", sp\n\n"^
-                                             "\tpop "^mkpushlist (pc::(rev calleesaves))^"\n"
+                                    epilog = "\tadd $"^(Int.toString (!(#localsInFrame frame) * wSz))^", sp\n"^
+                                             "\tpop "^mkpushlist (pc::(rev calleesaves))^"\n"^
+                                             "\t#epilogo: "^(#name frame)^"\n"
                                              }
 
 
