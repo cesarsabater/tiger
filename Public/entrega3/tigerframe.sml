@@ -122,7 +122,7 @@ fun formals({argsAcc, ...}: frame) = !argsAcc
 
 fun maxRegFrame(f: frame) = !(#actualReg f)
   
-fun exp(InFrame k) e = MEM(BINOP(PLUS, e, CONST k))
+fun exp(InFrame k) e = (if (k >= 0) then MEM(BINOP(PLUS, e, CONST k)) else MEM(BINOP(MINUS, e, CONST (~k))))
 	| exp(InReg l) _ = TEMP l
 fun externalCall(s, l) = CALL(NAME s, l)
 
