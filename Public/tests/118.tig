@@ -1,5 +1,5 @@
 let 
-  function f (a : int,b :int) : int = let var d := 0
+  function f (a : int,b :int,c: int) : int = let var d := 0
                                           var e := a
                                       in 
                                         d := d + b ;
@@ -9,9 +9,9 @@ let
                                           d := d + b ;
                                           e := e - 1 
                                         ) ; 
-                                        d
+                                        d + c
                                       end 
   
 in
-  0
+  f(3,5,7)
 end

@@ -22,13 +22,15 @@ open tigerassem
 			 let
 				val desp = if mempos<0 then " - " ^ Int.toString(~mempos) else if mempos>0 then " + " ^ Int.toString(mempos) else ""
 			 in
+				print ("teeeeeeeeeeeeeeemp"^temp^"\n")  ;
 				emit(OPER {assem="str 's0 [falta fp,#" ^ desp ^ "]\n", src=[temp,tigerframe.fp], dst=[], jump=NONE}) 
 			 end
           fun fetchTemp(temp, mempos) =
 	         let
 		 		val desp = if mempos<0 then " - " ^ Int.toString(~mempos) else if mempos>0 then " + " ^ Int.toString(mempos) else ""
 	  	     in
-				emit(OPER {assem="ldr 'd0[falta fp,#" ^ desp ^ "]\n", src=[tigerframe.fp], dst=[temp], jump=NONE})
+	  	        print ("teeeeeeeeeeeeeeemp"^temp^"\n")  ;
+				emit(OPER {assem="ldr 'd0 [falta fp,#" ^ desp ^ "]\n", src=[tigerframe.fp], dst=[temp], jump=NONE})
 			 end
           
           

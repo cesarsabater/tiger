@@ -152,8 +152,9 @@ let
 							TEMP (List.nth(argregs,n))) :: aux accs (n+1) 
 			else if not (List.nth ((#formals fr), n)) then (* si no escapa la copiamos a un temp *) 
 			let 
-				val varoffset = CONST (((n - List.length argregs)+localsGap)*wSz)
-				val src = MEM(BINOP(PLUS, varoffset, TEMP fp)) 
+				val varoffset = ((n - List.length argregs)+localsGap)*wSz
+				val src = (if (varoffset >= 0) then MEM(BINOP(PLUS,CONST varoffset, TEMP fp)) 
+				                              else MEM(BINOP(MINUS,CONST (~varoffset), TEMP fp))) 
 			in
 				tigertree.MOVE(exp acc (TEMP fp), src) :: aux accs (n+1)
 			end
