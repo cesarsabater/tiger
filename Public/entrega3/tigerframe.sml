@@ -27,24 +27,28 @@ val sp = "sp"				(* stack pointer *)
 val lr = "lr"				(* link register *) 
 val pc = "pc"  				(* program counter *)
 val ov = "OV"				(* overflow value (edx en el 386) *)
-val wSz = 4					(* word size in bytes *)
-val log2WSz = 2				(* base two logarithm of word size in bytes *)
-val fpPrev = 0				(* offset (bytes) *)
-(* arreglar static link!!! *)
-val fpPrevLev = 0 (* 8	*)	(* offset (bytes) *)
-val argsInicial = 0			(* words *)
-val argsOffInicial = 0		(* words *)
-val argsGap = wSz			(* bytes *)
-val regInicial = 1			(* reg *)
-val localsInicial = 0		(* words *)
-val numLocalsInicial = 0    (* sreg *)
-val localsGap = ~4 			(* bytes *)
 val calldefs = [rv]
 val specialregs = [fp, sp, lr, pc]
 val argregs = [rv, "r1", "r2", "r3"]
 val callersaves = ["r0","r1","r2","r3"]
 val calleesaves = ["r4","r5","r6","r7","r8","r9","r10","r11"]
 val usable = ["r0","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10"]
+val backup = calleesaves@[lr]  (* backup y restore deben estar alineados *)
+val restore = calleesaves@[pc]
+val wSz = 4					(* word size in bytes *)
+val log2WSz = 2				(* base two logarithm of word size in bytes *)
+val fpPrev = 0				(* offset (bytes) *)
+
+val backupGap = wSz * (List.length backup)
+val argsInicial = 0(* cantidad *)
+val argsGap = wSz			(* bytes *)
+val argsOffInicial = backupGap + argsGap 	(* words *)
+val regInicial = 1			(* reg *)
+val localsInicial = 0		(* words *)
+val numLocalsInicial = 0    (* sreg *)
+val fpPrevLev = localsInicial	(* offset (bytes) *)
+val localsGap = wSz 			(* bytes *)
+
 datatype access = InFrame of int | InReg of tigertemp.label
 
 type frame = {
@@ -69,20 +73,20 @@ datatype canonfrag =
 fun allocArg (f: frame) b = 
 	case b of
 	true =>
-		let	val ret = (!(#actualArg f)+argsOffInicial)*wSz
+		let	val ret = (!(#actualArg f)*wSz + argsOffInicial)
 			val _ = #actualArg f := !(#actualArg f)+1
 		in	InFrame ret end
-	
+
 	| false =>  InReg(tigertemp.newtemp())
 
 
 fun allocLocal (f: frame) b = 
     case b of
         true =>
-            let	val ret = InFrame(!(#actualLocal f)+localsGap)
+            let	val ret = InFrame(!(#actualLocal f) -  localsGap)
             in	
                 #localsInFrame f := !(#localsInFrame f)+1;
-                #actualLocal f:=(!(#actualLocal f)+localsGap); 
+                #actualLocal f:=(!(#actualLocal f) - localsGap); 
                 ret
             end (* esto está modificado, hay que verificar que esté bien! *)
         | false => InReg(tigertemp.newtemp())
@@ -183,12 +187,12 @@ fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\n\n\n\n\t#prologo:\n"^
                                                     ".global " ^ #name frame ^ "\n" ^
                                                    "\t" ^ #name frame ^ ":\n" ^  
                                                    
-                                                   "\tpush "^mkpushlist (calleesaves@[lr])^"\n"^
+                                                   "\tpush "^mkpushlist backup^"\n"^
                                                    "\tmov     r11,sp\n" ^ 
                                                    "\tsub     sp, $"^(Int.toString (!(#localsInFrame frame) * wSz ))^"\n\n",
                                     body = instrs,
                                     epilog = "\tadd     sp, $"^(Int.toString (!(#localsInFrame frame) * wSz))^"\n"^
-                                             "\tpop "^mkpushlist (calleesaves@[pc])^"\n"^
+                                             "\tpop "^mkpushlist restore^"\n"^
                                              "\t#epilogo: "^(#name frame)^"\n"
                                              }
 
