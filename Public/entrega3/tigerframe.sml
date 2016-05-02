@@ -155,7 +155,7 @@ let
 			let 
 				val varoffset = ((n - List.length argregs)+localsGap)*wSz
 				val src = (if (varoffset >= 0) then MEM(BINOP(PLUS,CONST varoffset, TEMP fp)) 
-				                              else MEM(BINOP(MINUS,CONST (~varoffset), TEMP fp))) 
+				                               else MEM(BINOP(MINUS,CONST (~varoffset), TEMP fp))) 
 			in
 				tigertree.MOVE(exp acc (TEMP fp), src) :: aux accs (n+1)
 			end
@@ -184,9 +184,9 @@ fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\n\n\n\n\t#prologo:\n"^
                                                    "\t" ^ #name frame ^ ":\n" ^  
                                                    
                                                    "\tpush "^mkpushlist (calleesaves@[lr])^"\n"^
-                                                   "\tadd $"^(Int.toString (!(#localsInFrame frame) * wSz * (~1)))^", sp\n\n",
+                                                   "\tsub     sp, $"^(Int.toString (!(#localsInFrame frame) * wSz ))^"\n\n",
                                     body = instrs,
-                                    epilog = "\tadd $"^(Int.toString (!(#localsInFrame frame) * wSz))^", sp\n"^
+                                    epilog = "\tadd     sp, $"^(Int.toString (!(#localsInFrame frame) * wSz))^"\n"^
                                              "\tpop "^mkpushlist (pc::(rev calleesaves))^"\n"^
                                              "\t#epilogo: "^(#name frame)^"\n"
                                              }
