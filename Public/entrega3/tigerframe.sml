@@ -47,10 +47,6 @@ val calleesaves = ["r4","r5","r6","r7","r8","r9","r10","r11"]
 val usable = ["r0","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10","r11"]
 datatype access = InFrame of int | InReg of tigertemp.label
 
-(*
-val usable = ["r0", "r1"];
-*)
-
 type frame = {
 	name : string,
 	formals : bool list,
@@ -79,6 +75,18 @@ fun allocArg (f: frame) b =
 	
 	| false =>  InReg(tigertemp.newtemp())
 
+
+fun allocLocal (f: frame) b = 
+    case b of
+        true =>
+            let	val ret = InFrame(!(#actualLocal f)+localsGap)
+            in	
+                #localsInFrame f := !(#localsInFrame f)+1;
+                #actualLocal f:=(!(#actualLocal f)+localsGap); 
+                ret
+            end (* esto está modificado, hay que verificar que esté bien! *)
+        | false => InReg(tigertemp.newtemp())
+
 fun newFrame{name, formals} = 
 let
 	val newframe = {	name=name,
@@ -91,8 +99,14 @@ let
 				argsAcc = ref ([] : (access list)) 
 			}
             
-     val _ = (#argsAcc newframe := (List.map (fn b => allocArg newframe b) formals))
+            
+	 fun allocFormal n = if n < (List.length argregs) 
+		 then allocLocal newframe (List.nth (formals,n))
+		 else allocArg newframe (List.nth (formals,n))
+	 
 in
+	(* ojo cono este tabulate tramposo, usa formals implícitamente *)
+	#argsAcc newframe := List.tabulate (List.length formals, allocFormal);
 	newframe
 end
 
@@ -107,18 +121,7 @@ fun formals({argsAcc, ...}: frame) = !argsAcc
 *)
 
 fun maxRegFrame(f: frame) = !(#actualReg f)
-
-fun allocLocal (f: frame) b = 
-    case b of
-        true =>
-            let	val ret = InFrame(!(#actualLocal f)+localsGap)
-            in	
-                #localsInFrame f := !(#localsInFrame f)+1;
-                #actualLocal f:=(!(#actualLocal f)+localsGap); 
-                ret
-            end (* esto está modificado, hay que verificar que esté bien! *)
-        | false => InReg(tigertemp.newtemp())
-    
+  
 fun exp(InFrame k) e = MEM(BINOP(PLUS, e, CONST k))
 	| exp(InReg l) _ = TEMP l
 fun externalCall(s, l) = CALL(NAME s, l)
@@ -140,8 +143,6 @@ fun mkpushlist [] = "{}"
     in 
         "{"^x^(mkpushlist1 xs)^"}" 
     end
-
-
 
 fun procEntryExit1 (fr : frame, body) =  
 let 
