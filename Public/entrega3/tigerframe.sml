@@ -105,7 +105,7 @@ let
 		 else allocArg newframe (List.nth (formals,n))
 	 
 in
-	(* ojo cono este tabulate tramposo, usa formals implícitamente *)
+	(* ojo cono este tabulate, usa formals implícitamente ademas de n *)
 	#argsAcc newframe := List.tabulate (List.length formals, allocFormal);
 	newframe
 end
