@@ -182,7 +182,7 @@ in
 end
 
 fun procEntryExit2 (frame, body) = 
-	body @ [ tigerassem.OPER{assem="", src=[rv,sp] @ calleesaves, dst=[], jump=SOME[]}]
+	body @ [tigerassem.OPER{assem="", src=[rv,sp] @ calleesaves, dst=[], jump=SOME[]}]
 
 
 fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\n\n\n\n\t#prologo:\n"^
