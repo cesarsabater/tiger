@@ -88,4 +88,7 @@ open tigerframe
 *)
 			  print (List.foldr (fn (inst,str) => (allocinstr alloc inst)^str) "\n" instrlist )	)
 
+       fun sameMove alloc (tigerassem.MOVE {assem = assem,src = src, dst = dst}) = if (String.compare(Polyhash.find alloc src,Polyhash.find alloc dst) = EQUAL) then false else true
+        |  sameMove  _           _  = true
+         
 end

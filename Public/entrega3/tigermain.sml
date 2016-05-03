@@ -62,7 +62,7 @@ fun main(args) =
         
         
 		val _ = List.app bigcolor tempinstructions
-                            
+                           
 	in
 		print "yes!!\n"
 		
