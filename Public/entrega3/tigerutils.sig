@@ -19,6 +19,7 @@ val printCode: (tigerassem.instr list * tigerframe.frame) list -> unit
 
 val printFinal : tigercolor.allocation -> tigerassem.instr list -> unit
 
+val sameMove : tigercolor.allocation ->  tigerassem.instr -> bool
 
 end
 
