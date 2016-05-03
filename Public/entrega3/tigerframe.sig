@@ -32,13 +32,11 @@ val externalCall : string * tigertree.exp list -> tigertree.exp
 val procEntryExit1 : frame * tigertree.stm -> tigertree.stm
 val procEntryExit2 : frame * tigerassem.instr list -> tigerassem.instr list
 val procEntryExit3 : frame * tigerassem.instr list -> { prolog : string, body: tigerassem.instr list, epilog : string }
+type strfrag = tigertemp.label * string
+datatype frag = PROC of {body: tigertree.stm, frame: frame} | STRING of strfrag 
+datatype canonfrag = CPROC of {body: tigertree.stm list, frame: frame} | CSTR of strfrag
+datatype instrfrag = IPROC of (tigerassem.instr list * frame) | ISTR of strfrag
+val genstring: strfrag -> string
 
-datatype frag = 
-    PROC of {body: tigertree.stm, frame: frame}
-	| STRING of tigertemp.label * string
-    
-datatype canonfrag = 
-    CANONPROC of {body: tigertree.stm list, frame: frame}
-    | CANONSTRING of tigertemp.label * string
 
 end

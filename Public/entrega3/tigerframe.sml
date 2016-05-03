@@ -63,12 +63,14 @@ type frame = {
 }
 
 type register = string
+type strfrag = tigertemp.label * string
 
-datatype frag = PROC of {body: tigertree.stm, frame: frame}
-	| STRING of tigertemp.label * string
-datatype canonfrag = 
-    CANONPROC of {body: tigertree.stm list, frame: frame}
-    | CANONSTRING of tigertemp.label * string
+datatype frag = PROC of {body: tigertree.stm, frame: frame} | STRING of strfrag 
+
+datatype canonfrag = CPROC of {body: tigertree.stm list, frame: frame} | CSTR of strfrag
+
+datatype instrfrag = IPROC of (tigerassem.instr list * frame) | ISTR of strfrag
+
 
 fun allocArg (f: frame) b = 
 	case b of
@@ -197,6 +199,8 @@ fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\n\n\n\n\t#prologo:\n"^
                                              }
 
 
-end
+fun genstring (lab, str) = "\t.align\t2\n"^lab^":\n\t.ascii\t\""^str^"\"\n"
 
+
+end
 

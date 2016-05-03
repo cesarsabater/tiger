@@ -4,6 +4,7 @@ open tigertrans
 open tigercanon
 open tigercodegen
 open tigerassem
+open tigerframe
 
 		fun canonize x = traceSchedule (basicBlocks (linearize x)) 
 
@@ -14,9 +15,9 @@ open tigerassem
 
 		fun genCanonFmts [] = []
 			| genCanonFmts ((tigerframe.PROC {body, frame})::fmts) = 
-						tigerframe.CANONPROC { body = canonize body, frame=frame}::(genCanonFmts fmts)
+						(CPROC { body = canonize body, frame=frame})::(genCanonFmts fmts)
 			| genCanonFmts (tigerframe.STRING (l, s)::fmts) = 
-						tigerframe.CANONSTRING (l, s)::genCanonFmts fmts 
+						(CSTR (l, s))::genCanonFmts fmts 
 
 		fun printFragments [] = () 
 			   | printFragments ((tigerframe.PROC {body, frame=f})::fmts) =
@@ -36,14 +37,14 @@ open tigerassem
 
 
 		fun printCanonFmts [] = () 
-			   | printCanonFmts ((tigerframe.CANONPROC {body, frame=f})::fmts) =
+			   | printCanonFmts ((CPROC {body, frame=f})::fmts) =
 					let
 						val _ = print ("\nFragment \""^(tigerframe.name f)^"\":\n")
 						val _ = map (fn st => print (tigerit.tree st)) (body)
 					in	
 						printCanonFmts(fmts) 
 					end
-			   | printCanonFmts (tigerframe.CANONSTRING s::fmts) = 
+			   | printCanonFmts ((CSTR s)::fmts) = 
 					let 
 						val _ = print("\nString Fragment:\n")
 						val _ = print(Ir([tigerframe.STRING s]))
@@ -60,8 +61,9 @@ open tigerassem
 		|   geninstr1 frame (st::stl) = (codegen frame st)@(geninstr1 frame stl) 
 		
 		fun geninstr [] = []
-		|   geninstr (tigerframe.CANONPROC {body, frame}::l) = (((*(genLabel(tigerframe.name frame))::*)(geninstr1 frame body), frame)::(geninstr l))
-		|   geninstr (tigerframe.CANONSTRING (l,s)::cfl) = geninstr cfl
+		|   geninstr ((CPROC {body, frame})::l) = 
+         (IPROC (*(genLabel(tigerframe.name frame))::*)((geninstr1 frame body), frame) )::(geninstr l)
+		|   geninstr ((CSTR (l,s))::cfl) = (ISTR (l,s))::geninstr cfl
 		
 		val instr2string = format (fn t => t)
 		
@@ -70,10 +72,15 @@ open tigerassem
 		fun code2string [] = ""
 		|   code2string (instr::l) = (instr2string instr)^(code2string l)
 		
-		fun printCode chunks =
-			( print "\nCodigo:\n";
-			 (List.app (fn (instrlist, frm) => 
-                        ( print ((tigerframe.name frm)^":\n");print (code2string instrlist); print "\n")) chunks ) )
+		fun printCode instrfrags =
+        let 
+            fun prIproc (IPROC (instrlist, frm)) = 
+                (print ((tigerframe.name frm)^":\n");print (code2string instrlist); print "\n")
+            |   prIproc (ISTR _ ) = () 
+        in    
+			 print "\nCodigo sin colorear:\n";
+			 List.app prIproc instrfrags 
+        end
 			
 		fun printFinal alloc instrlist =  (
 (*
