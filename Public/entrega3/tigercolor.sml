@@ -476,7 +476,6 @@ in
   (*  print "spilled:\n" ;
     printWL spilledNodes;  *)
     (color, spilledNodes)
-	
 end
 
 

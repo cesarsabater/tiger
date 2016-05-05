@@ -52,12 +52,19 @@ fun main(args) =
 		val tempinstructions = geninstr canonfmts
 		val _ = printCode tempinstructions
 		
-		val _ = List.app (fn (instrlist, frame) => let 
-                                val (il', alloc) = tigercolor.main (instrlist, frame)
-                                val il = List.filter (sameMove alloc) il'
-                                val {prolog, body, epilog} = tigerframe.procEntryExit3 (frame, il)
-                               in print prolog; (printFinal alloc il); print epilog end) tempinstructions
-                            
+        
+        fun bigcolor (tigerframe.IPROC (instrlist, frame)) =
+            let 
+                val il'' = tigerframe.procEntryExit2(frame, instrlist)
+                val (il', alloc) = tigercolor.main (il'', frame)
+                val il = List.filter (sameMove alloc) il'
+                val {prolog, body, epilog} = tigerframe.procEntryExit3 (frame, il)
+               in print prolog; (printFinal alloc il); print epilog end
+        |   bigcolor (tigerframe.ISTR i) = print (tigerframe.genstring i)
+        
+        
+		val _ = List.app bigcolor tempinstructions
+                           
 	in
 		print "yes!!\n"
 		
