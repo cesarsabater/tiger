@@ -334,8 +334,10 @@ fun AssignColors() = let fun body() = let val n = pop()
                               ) )
                             else ()   
                           end  
-                          fun coalescedcolor n = Polyhash.insert color (n,(Polyhash.find color (GetAlias(n)))) 
-                            
+                          fun coalescedcolor n =  ( (* print "coalesced" ;
+                                                  print n ; print "\n" ; *)
+                                                  Polyhash.insert color (n,(Polyhash.find color (GetAlias(n)))) 
+                            )
  in                     
 (*
    print "SelectStack : \n" ;       
@@ -381,10 +383,16 @@ end
 		(* valores vivos en cada instruccion, empezando por la ultima *)
 		fun procInstr instr = 
 		let
-			val live = nodelist2set (liveout instr)
+			val live =  tigerset.difference ( 
+					   nodelist2set (liveout instr)
+			           ,specialreg) 
 			val ismove' = Splaymap.find(ismove, instr)  
-			val use' = nodelist2set(Splaymap.find(use, instr))
-			val def' = nodelist2set(Splaymap.find(def, instr))
+			val use' = tigerset.difference ( 
+			           nodelist2set(Splaymap.find(use, instr))
+			           ,specialreg) 
+			val def' =  tigerset.difference ( 
+			            nodelist2set(Splaymap.find(def, instr)) 
+			            ,specialreg)
 			fun addToMoveList n mv = 
 			let  
 				val moveList_n = peekOrEmpty moveList n movecmp
@@ -404,7 +412,7 @@ end
 			(*agregamos nodos a initial *)
 			initial := !(tigerset.union(initial, union(use',def')));
 			(*hacemos el resto del build*)
-			if ismove' then 
+			if (ismove' andalso notEmpty(use') andalso notEmpty(def')) then 
 				let
 					val src = unElem use'
 					val dst = unElem def'
@@ -447,9 +455,11 @@ in
 (*
 	print "\n\ninitials:\n" ;
 	printWL initial;
+*)
+(*	
 	print "\n\nprecolored:\n" ;
 	printWL precolored;
-*)
+*) 
 	MakeWorklist ()  ;
 (*
 	print "\n\nsimplify:\n" ;
@@ -461,11 +471,10 @@ in
 *)
 	Loop()  ; 
 	AssignColors() ;
-(*
-	printTable color ;
-*)
-    print "spilled:\n" ;
-    printWL spilledNodes; 
+
+(*	printTable color ; *)
+  (*  print "spilled:\n" ;
+    printWL spilledNodes;  *)
     (color, spilledNodes)
 	
 end

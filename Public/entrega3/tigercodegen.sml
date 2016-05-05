@@ -41,7 +41,7 @@ let
 	                             | UGT  => "bhi"
 	                             | UGE  => "bhs"
  	                           
-	    in emit (OPER {assem = "CMP 's0, 's1\n" ^ instr ^ " " ^ lab1 ^ "\n",
+	    in emit (OPER {assem = "cmp     's0, 's1\n" ^ instr ^ " " ^ lab1 ^ "\n",
 	                   src = [munchExp e1, munchExp e2], dst = [],
 	                   jump = SOME [lab1,lab2] })
 	                   
@@ -93,8 +93,32 @@ let
         emit (OPER {assem = "bl      " ^ lf ^ "\n",
 					src = List.take(argregs, Int.min(List.length argregs,List.length argtemps)),
                     dst = calldefs,   (*original calldefs*)
-                    jump = NONE})   (* O jump = lf ?*)	  
+                    jump = NONE}) ;  (* O jump = lf ?*)
+              let val offset = (List.length args - List.length tigerframe.argregs)*tigerframe.wSz in
+                    if (offset > 0) then (munchStm (MOVE(TEMP sp,BINOP(PLUS,CONST offset,TEMP sp))))
+                    else ()            
+              end   
+                    	  
 	   end
+	   
+	  | munchStm (MOVE(TEMP x,BINOP(PLUS, CONST i,TEMP y))) = 
+	       if (imm12 i) then (
+	           emit(OPER {assem = (if (String.compare(x,y) = EQUAL) then 
+	                                  "add    'd0, #" ^ Int.toString i ^ "\n" 
+	                               else 
+	                                  "add    'd0, 's0, #" ^ Int.toString i ^ "\n"),
+	                      src = [y],
+	                      dst = [x], 
+	                      jump = NONE })
+	           
+	       ) else (
+	           emit(OPER {assem = "add    'd0, 's0, 's1\n",
+	                      src = [y,munchExp(CONST i)],
+	                      dst = [x], 
+	                      jump = NONE })
+	           
+	       
+	       )
     
 	  | munchStm (MOVE(TEMP t1, e2)) = 
 	     emit(tigerassem.MOVE {assem= "mov     'd0, 's0\n",
@@ -155,12 +179,12 @@ let
 	and munchExp (MEM (BINOP (PLUS, CONST i, e1))) = 
 	    if (imm12 i) then  
 	     result(fn r => emit(OPER
-	            {assem = "ldr     'd0, !['s0, #" ^ Int.toString i ^ "]\n",
+	            {assem = "ldr     'd0, ['s0, #" ^ Int.toString i ^ "]\n",
 	             src = [munchExp e1], dst = [r],
 	             jump = NONE }))
 	    else 
 	     result(fn r => emit(OPER
-	            {assem = "ldr     'd0, !['s1, 's0]\n",
+	            {assem = "ldr     'd0, ['s1, 's0]\n",
 	             src = [munchExp (CONST i),munchExp e1], dst = [r],
 	             jump = NONE }))           
 	  
