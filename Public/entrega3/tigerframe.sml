@@ -73,13 +73,14 @@ datatype instrfrag = IPROC of (tigerassem.instr list * frame) | ISTR of strfrag
 
 
 fun allocArg (f: frame) b = 
-	case b of
-	true =>
-		let	val ret = (!(#actualArg f)*wSz + argsOffInicial)
-			val _ = #actualArg f := !(#actualArg f)+1
-		in	InFrame ret end
-
-	| false =>  InReg(tigertemp.newtemp())
+let
+val acc = case b of 
+	  true => InFrame (!(#actualArg f)*wSz + argsOffInicial)
+	| false => InReg (tigertemp.newtemp())
+in 
+	#actualArg f := !(#actualArg f)+1;
+	acc
+end
 
 
 fun allocLocal (f: frame) b = 
@@ -170,13 +171,23 @@ let
 	val moveargs = aux (!argsAcc) 0 (*Instrucciones para mover de los 
 										argumentos a los locals donde la 
 										función ve internamente las cosas *)
+										
+	
+(*
 	val freshtmps = List.tabulate (List.length calleesaves, 
 									fn _ => TEMP (tigertemp.newtemp()))
+*)
+(*
 	val moves = ListPair.zip(freshtmps, List.map TEMP calleesaves)
+*)
+(*
 	val saveregs = List.map MOVE moves (* Instrucciones para salvar en temporarios los callee saves *)
-	
+*)
+(*
 	val revmoves = List.map (fn(x,y) => (y,x)) moves
-	val restoreregs = List.map MOVE revmoves (* Restaurar los callee saves *)
+	val restoreregs = List.map MOVE revmoves 
+*)
+	(* Restaurar los callee saves *)
 in 
 	seq( (*saveregs @ *) moveargs @ [body] (* @ restoreregs*) ) 
 end
