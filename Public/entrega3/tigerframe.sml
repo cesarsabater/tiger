@@ -21,7 +21,7 @@ open tigertree
 
 type level = int
 
-val fp = "r11"				(* frame pointer *)
+val fp = "fp"				(* frame pointer *)
 val rv = "r0"				(* return value  *) 
 val sp = "sp"				(* stack pointer *)
 val lr = "lr"				(* link register *) 
@@ -31,7 +31,7 @@ val calldefs = [rv]
 val specialregs = [fp, sp, lr, pc]
 val argregs = [rv, "r1", "r2", "r3"]
 val callersaves = ["r0","r1","r2","r3"]
-val calleesaves = ["r4","r5","r6","r7","r8","r9","r10","r11"]
+val calleesaves = ["r4","r5","r6","r7","r8","r9","r10", fp]
 val usable = ["r0","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10"]
 val backup = calleesaves@[lr]  (* backup y restore deben estar alineados *)
 val restore = calleesaves@[pc]
@@ -42,7 +42,7 @@ val fpPrev = 0				(* offset (bytes) *)
 val backupGap = wSz * (List.length backup)
 val argsInicial = 0(* cantidad *)
 val argsGap = wSz			(* bytes *)
-val argsOffInicial = backupGap + argsGap 	(* words *)
+val argsOffInicial = backupGap + wSz (* words *)
 val regInicial = 1			(* reg *)
 val localsInicial = 0		(* words *)
 val numLocalsInicial = 0    (* sreg *)
@@ -85,10 +85,10 @@ fun allocArg (f: frame) b =
 fun allocLocal (f: frame) b = 
     case b of
         true =>
-            let	val ret = InFrame(!(#actualLocal f) -  localsGap)
+            let	val ret = InFrame(!(#actualLocal f))
             in	
                 #localsInFrame f := !(#localsInFrame f)+1;
-                #actualLocal f:=(!(#actualLocal f) - localsGap); 
+                #actualLocal f:=(!(#actualLocal f) - wSz); 
                 ret
             end (* esto está modificado, hay que verificar que esté bien! *)
         | false => InReg(tigertemp.newtemp())
@@ -159,7 +159,7 @@ let
 							TEMP (List.nth(argregs,n))) :: aux accs (n+1) 
 			else if not (List.nth ((#formals fr), n)) then (* si no escapa la copiamos a un temp *) 
 			let 
-				val varoffset = ((n - List.length argregs)+localsGap)*wSz
+				val varoffset = ((n - List.length argregs)*wSz) + argsOffInicial
 				val src = (if (varoffset >= 0) then MEM(BINOP(PLUS,CONST varoffset, TEMP fp)) 
 				                               else MEM(BINOP(MINUS,CONST (~varoffset), TEMP fp))) 
 			in
@@ -182,20 +182,21 @@ in
 end
 
 fun procEntryExit2 (frame, body) = 
-	body @ [tigerassem.OPER{assem="", src=[rv,sp] @ calleesaves, dst=[], jump=SOME[]}]
+	body   @ [tigerassem.OPER{assem="", src=[rv(*,sp*)] (* @ calleesaves *), dst=[], jump=SOME[]}] 
 
 
-fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\n\n\n\n\t#prologo:\n"^
+fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\n\n\n\n\t@prologo:\n"^
                                                     ".global " ^ #name frame ^ "\n" ^
                                                    "\t" ^ #name frame ^ ":\n" ^  
-                                                   
+                                 
                                                    "\tpush "^mkpushlist backup^"\n"^
-                                                   "\tmov     r11,sp\n" ^ 
+                                                   "\tsub     fp, sp, #4\n" ^ 
                                                    "\tsub     sp, $"^(Int.toString (!(#localsInFrame frame) * wSz ))^"\n\n",
                                     body = instrs,
-                                    epilog = "\tadd     sp, $"^(Int.toString (!(#localsInFrame frame) * wSz))^"\n"^
-                                             "\tpop "^mkpushlist restore^"\n"^
-                                             "\t#epilogo: "^(#name frame)^"\n"
+                                    epilog = "@epilogo\n"^ 
+											"\tadd     sp, $"^(Int.toString (!(#localsInFrame frame) * wSz))^"\n"^
+                                             "\tpop "^mkpushlist restore^"\n"
+                                            
                                              }
 
 
