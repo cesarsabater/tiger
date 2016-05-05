@@ -133,11 +133,12 @@ fun stringExp(s: string) =
 (*
 		val len = ".long "^makestring(stringLen s)
 *)
+
 (*
 		val str = ".string \""^s^"\""
 *)
 (*
-		val _ = datosGlobs:=(!datosGlobs @ [STRING(l, len), STRING("", str)])
+		val _ = datosGlobs:=(!datosGlobs @ [ (* STRING(l, len), *)STRING("", str)])
 *)
         val _ = datosGlobs:=(!datosGlobs @ [STRING(l, s)])
 	in	Ex(NAME l) end

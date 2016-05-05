@@ -1,5 +1,6 @@
-#undef __STDC__
+//#undef __STDC__
 #include <stdio.h>
+#include <stdlib.h>
 
 
 int *initArray(int size, int init)
@@ -102,7 +103,7 @@ int not(int i)
 
 #undef getchar
 
-struct string *getchar()
+struct string *ourgetchar()
 {int i=getc(stdin);
  if (i==EOF) return &empty;
  else return consts+i;
