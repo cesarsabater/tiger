@@ -69,8 +69,10 @@ fun main(args) =
         val functions_final = concat (List.map bigcolor uncolored_frags)
       
 		
-		val TheCode =   "        .filename        program.s\n"^
-						"        .rodata\n"^
+		val progname = "program.s" 
+		val compiler = "arm-linux-gnueabi-gcc" 
+		val TheCode =   "        .file     \""^progname^"\"\n"^
+						"        .section  .rodata\n"^
 						strings_final^
 						"        .text\n"^
 						functions_final
@@ -78,10 +80,11 @@ fun main(args) =
 		val _ = (print "\nCODIGO FINAL:\n\n"; print TheCode)
 		
 		
-		val outFile = (TextIO.openOut ("program.s"))
+		val outFile = (TextIO.openOut (progname))
                               handle _ => raise Fail "Falló al abrir el archivo de salida"
         val _ =  TextIO.output (outFile, TheCode)
         val _ = TextIO.closeOut outFile
+        val _ = Process.system(compiler^" runtime.c "^progname^" -o a.out")
 	in
 		
 		print "yes!!\n"

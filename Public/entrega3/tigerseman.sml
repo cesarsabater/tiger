@@ -403,7 +403,7 @@ fun transExp(venv, tenv) =
 						val fms = map (fn p => (#1 p)) pms
 						val escapes = map (fn p => (#2 p)) pms
 						
-						val flab = if name="_tigermain" then "main" 
+						val flab = if name="_tigermain" then "tigermain" 
 							else tigertemp.newlabel()
 						val lev = newLevel{parent=topLevel(), formals=escapes, name=flab}
 						
