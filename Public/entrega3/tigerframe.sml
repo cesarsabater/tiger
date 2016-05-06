@@ -70,11 +70,6 @@ type iproc = tigerassem.instr list * frame
 
 datatype frag = PROC of procfrag | STRING of strfrag 
 
-datatype canonfrag = CPROC of cproc | CSTR of strfrag
-
-datatype instrfrag = IPROC of iproc | ISTR of strfrag
-
-
 fun allocArg (f: frame) b = 
 let
 val acc = case b of 

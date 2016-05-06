@@ -37,8 +37,6 @@ type procfrag = {body: tigertree.stm, frame: frame}
 type cproc  = {body: tigertree.stm list, frame: frame} 
 type iproc = tigerassem.instr list * frame
 datatype frag = PROC of procfrag | STRING of strfrag 
-datatype canonfrag = CPROC of cproc | CSTR of strfrag
-datatype instrfrag = IPROC of iproc | ISTR of strfrag
 val genstring: strfrag -> string
 
 
