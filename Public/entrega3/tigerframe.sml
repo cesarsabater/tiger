@@ -64,12 +64,15 @@ type frame = {
 
 type register = string
 type strfrag = tigertemp.label * string
+type procfrag = {body: tigertree.stm, frame: frame}
+type cproc  = {body: tigertree.stm list, frame: frame} 
+type iproc = tigerassem.instr list * frame
 
-datatype frag = PROC of {body: tigertree.stm, frame: frame} | STRING of strfrag 
+datatype frag = PROC of procfrag | STRING of strfrag 
 
-datatype canonfrag = CPROC of {body: tigertree.stm list, frame: frame} | CSTR of strfrag
+datatype canonfrag = CPROC of cproc | CSTR of strfrag
 
-datatype instrfrag = IPROC of (tigerassem.instr list * frame) | ISTR of strfrag
+datatype instrfrag = IPROC of iproc | ISTR of strfrag
 
 
 fun allocArg (f: frame) b = 
@@ -198,7 +201,7 @@ fun procEntryExit2 (frame, body) =
 	body   @ [tigerassem.OPER{assem="", src=[rv(*,sp*)] (* @ calleesaves *), dst=[], jump=SOME[]}] 
 
 
-fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\n\n\n\n\t@prologo:\n"^
+fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\t@prologo:\n"^
                                                     ".global " ^ #name frame ^ "\n" ^
                                                    "\t" ^ #name frame ^ ":\n" ^  
                                  
@@ -214,9 +217,12 @@ fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\n\n\n\n\t@prologo:\n"^
                                              }
 
 
+
 fun genstring (lab, str) = "\t.align\t2\n"^lab^":\n"^
 							"\t.long\t"^(Int.toString (String.size str))^"\n"^
 							"\t.ascii\t\""^str^"\"\n"
+							
+
 
 
 end

@@ -19,6 +19,7 @@ fun getActualLev() = !actualLevel
 
 val outermost: level = {parent=NONE,
 	frame=newFrame{name="_tigermain", formals=[]}, level=getActualLev()}
+	
 fun newLevel{parent={parent, frame, level}, name, formals} =
 	{
 		(* consultar si esto está bien! como hacer newLevel!! *)
