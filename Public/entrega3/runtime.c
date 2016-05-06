@@ -10,6 +10,14 @@ int *initArray(int size, int init)
  return a;
 }
 
+void _checkIndexArray(int *a, int i)
+{
+	if(i<0 || i>a[-1]) {
+		fprintf(stderr, "indice invalido en array..\n");
+		exit(-1);
+	}
+}
+
 int *allocRecord(int size)
 {int i;
  int *p, *a;
