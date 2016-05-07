@@ -42,32 +42,53 @@ fun main(args) =
 		val _ = printFragments(fragments)
 		val _ = print "\n\n\n"
 		
+		
 		(* caninizamos el codigo intermedio *)
-		val canonfmts = genCanonFmts fragments
+		val (strings, procfmts) = divideFrags ([],[]) fragments
+		val canonfmts = genCanonFmts procfmts
 		val _ = print "CODIGO INTERMEDIO CANONIZADO: \n\n" 
-		val _ = printCanonFmts(canonfmts)	
-		val _ = print "\n\n\n"	
+		val _ = printCanonFmts (strings, canonfmts)	
+		val _ = print "\n\n\n"
 		
 		(* val _ = tigerinterp.inter false canonfmts (getStrings res) *)
-		val tempinstructions = geninstr canonfmts
-		val _ = printCode tempinstructions
+		val uncolored_frags = geninstr canonfmts
+		val _ = printCode uncolored_frags
 		
         
-        fun bigcolor (tigerframe.IPROC (instrlist, frame)) =
-            let 
-                val il'' = tigerframe.procEntryExit2(frame, instrlist)
-                val (il', alloc) = tigercolor.main (il'', frame)
-                val il = List.filter (sameMove alloc) il'
-                val {prolog, body, epilog} = tigerframe.procEntryExit3 (frame, il)
-               in print prolog; (printFinal alloc il); print epilog end
-        |   bigcolor (tigerframe.ISTR i) = print (tigerframe.genstring i)
-        
-        
-		val _ = List.app bigcolor tempinstructions
-                           
+        fun bigcolor (instrlist, frame) =
+		let 
+			val il'' = tigerframe.procEntryExit2(frame, instrlist)
+			val (il', alloc) = tigercolor.main (il'', frame)
+			val il = List.filter (sameMove alloc) il'
+			val {prolog, epilog, ...} = tigerframe.procEntryExit3 (frame, il)
+		in 
+				prolog^(genFinal alloc il)^epilog 
+		end
+     
+        val strings_final = concat (List.map tigerframe.genstring strings)
+        val functions_final = concat (List.map bigcolor uncolored_frags)
+      
+		
+		val progname = "program.s" 
+		val compiler = "arm-linux-gnueabi-gcc -march=armv7-a" 
+		val TheCode =   "        .file     \""^progname^"\"\n"^
+						"        .section  .rodata\n"^
+						strings_final^
+						"        .text\n"^
+						functions_final
+		
+		val _ = (print "\nCODIGO FINAL:\n\n"; print TheCode)
+		
+		
+		val outFile = (TextIO.openOut (progname))
+                              handle _ => raise Fail "Falló al abrir el archivo de salida"
+        val _ =  TextIO.output (outFile, TheCode)
+        val _ = TextIO.closeOut outFile
+        val _ = Process.system(compiler^" runtime.c "^progname^" -o a.out")
 	in
-		print "yes!!\n"
 		
-	end	handle Fail s => print("Fail: "^s^"\n")
+		print "yes!!\n"
+	end	
+		handle Fail s => print("Fail: "^s^"\n")
 
 val _ = main(CommandLine.arguments())

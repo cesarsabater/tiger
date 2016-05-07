@@ -9,86 +9,86 @@ open tigerframe
 		fun canonize x = traceSchedule (basicBlocks (linearize x)) 
 
 		(* manipulacion de fragmentos *)
-	(*	fun getStrings [] = []
-			| getStrings ((tigerframe.STRING(l,s))::fmts) = (l,s)::(getStrings fmts)
-			| getStrings (_::fmts) = getStrings fmts *)
+		fun divideFrags (strs, fmts) []  = (rev strs, rev fmts)
+			| divideFrags (sl,fl) ((STRING s)::fmts) = divideFrags (s::sl, fl) fmts
+			| divideFrags(sl,fl) ((PROC f)::fmts) = divideFrags (sl, f::fl) fmts
 
-		fun genCanonFmts [] = []
-			| genCanonFmts ((tigerframe.PROC {body, frame})::fmts) = 
-						(CPROC { body = canonize body, frame=frame})::(genCanonFmts fmts)
-			| genCanonFmts (tigerframe.STRING (l, s)::fmts) = 
-						(CSTR (l, s))::genCanonFmts fmts 
+		fun genCanonFmts fs = List.map (fn {body=b, frame=f} => {body=canonize b, frame=f}) fs
 
-		fun printFragments [] = () 
-			   | printFragments ((tigerframe.PROC {body, frame=f})::fmts) =
-					let
-						val _ = print ("\nFragment \""^(tigerframe.name f)^"\":\n")
-						val _ = print (tigerit.tree body)
-					in	
-						printFragments(fmts) 
-					end
-			   | printFragments (s::fmts) = 
-					let 
-						val _ = print("\nString Fragment:\n")
-						val _ = print(Ir([s]))
-					in 
-							printFragments(fmts)
-					end
+		fun printString s = (print "\nString Fragment:\n" ; print (Ir([STRING s])))
+			
+		fun printFragments fg = 
+		let
+			fun printFrag (PROC {body, frame=f}) = 
+					( print ("\nFragment \""^(tigerframe.name f)^"\":\n");
+					print (tigerit.tree body) )
+				| printFrag	(STRING s) = printString s
+		in
+			List.app printFrag fg
+		end
 
-
-		fun printCanonFmts [] = () 
-			   | printCanonFmts ((CPROC {body, frame=f})::fmts) =
-					let
-						val _ = print ("\nFragment \""^(tigerframe.name f)^"\":\n")
-						val _ = map (fn st => print (tigerit.tree st)) (body)
-					in	
-						printCanonFmts(fmts) 
-					end
-			   | printCanonFmts ((CSTR s)::fmts) = 
-					let 
-						val _ = print("\nString Fragment:\n")
-						val _ = print(Ir([tigerframe.STRING s]))
-					in 
-							printCanonFmts(fmts)
-					end
+		fun printCanonFmts (sl, fl) =
+		let
+			fun printCFrag {body, frame=f} = 
+				( print ("\nFragment \""^(tigerframe.name f)^"\":\n");
+				List.app (fn st => print (tigerit.tree st)) body )
+		in
+			List.app printString sl;
+			List.app printCFrag fl 
+		end
    
         (*aux*)
         fun genLabel name = LABEL { assem= name ^ ":\n",
 								    lab= name  }
 
 		(* generacion de instrucciones *)
-		fun geninstr1 _ [] = []
-		|   geninstr1 frame (st::stl) = (codegen frame st)@(geninstr1 frame stl) 
 		
+
+(*
 		fun geninstr [] = []
 		|   geninstr ((CPROC {body, frame})::l) = 
-         (IPROC (*(genLabel(tigerframe.name frame))::*)((geninstr1 frame body), frame) )::(geninstr l)
+         (IPROC ((geninstr1 frame body), frame) )::(geninstr l)
 		|   geninstr ((CSTR (l,s))::cfl) = (ISTR (l,s))::geninstr cfl
+*)
+
+		fun geninstr cfmts =
+		let 
+			fun geninstr1 _ [] = []
+			|   geninstr1 frame (st::stl) = (codegen frame st)@(geninstr1 frame stl) 
+			fun geninstr2 {body, frame} = (geninstr1 frame body, frame)
+		in
+			List.map geninstr2 cfmts
+		end
 		
 		val instr2string = format (fn t => t)
-		
-		fun allocinstr alloc = format (fn t => (case (Polyhash.peek alloc t) of SOME d => d | NONE => t ))
 		
 		fun code2string [] = ""
 		|   code2string (instr::l) = (instr2string instr)^(code2string l)
 		
 		fun printCode instrfrags =
         let 
-            fun prIproc (IPROC (instrlist, frm)) = 
+            fun prIproc (instrlist, frm) = 
                 (print ((tigerframe.name frm)^":\n");print (code2string instrlist); print "\n")
-            |   prIproc (ISTR _ ) = () 
         in    
 			 print "\nCodigo sin colorear:\n";
 			 List.app prIproc instrfrags 
         end
+		
+		
+		fun allocinstr alloc = 
+		let
+			fun fmt t = case (Polyhash.peek alloc t) of 
+									SOME d => d 
+								  | NONE => t 
+		in 
+			format fmt
+		end
+		
+		fun genFinal alloc instrlist =  
+			List.foldr (fn (inst,str) => (allocinstr alloc inst)^str) "\n" instrlist
 			
-		fun printFinal alloc instrlist =  (
-(*
-                print "\nCodigo:\n"; 
-*)
-			  print (List.foldr (fn (inst,str) => (allocinstr alloc inst)^str) "\n" instrlist )	)
-
-       fun sameMove alloc (tigerassem.MOVE {assem = assem,src = src, dst = dst}) = if (String.compare(Polyhash.find alloc src,Polyhash.find alloc dst) = EQUAL) then false else true
+       fun sameMove alloc (tigerassem.MOVE {assem = assem,src = src, dst = dst}) = 
+		if (String.compare(Polyhash.find alloc src,Polyhash.find alloc dst) = EQUAL) then false else true
         |  sameMove  _           _  = true
          
 end

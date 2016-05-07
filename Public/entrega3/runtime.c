@@ -1,12 +1,22 @@
-#undef __STDC__
+//#undef __STDC__
 #include <stdio.h>
+#include <stdlib.h>
 
 
 int *initArray(int size, int init)
 {int i;
- int *a = (int *)malloc(size*sizeof(int));
- for(i=0;i<size;i++) a[i]=init;
- return a;
+ int *a = (int *)malloc(sizeof(int) + size*sizeof(int));
+ a[0]=size;
+ for(i=1;i<=size;i++) a[i]=init;
+ return &(a[1]);
+}
+
+void _checkIndexArray(int *a, int i)
+{
+	if(i<0 || i>a[-1]) {
+		fprintf(stderr, "indice %d invalido en array..\n", i);
+		exit(-1);
+	}
 }
 
 int *allocRecord(int size)
@@ -102,7 +112,7 @@ int not(int i)
 
 #undef getchar
 
-struct string *getchar()
+struct string *ourgetchar()
 {int i=getc(stdin);
  if (i==EOF) return &empty;
  else return consts+i;

@@ -27,7 +27,7 @@ val sp = "sp"				(* stack pointer *)
 val lr = "lr"				(* link register *) 
 val pc = "pc"  				(* program counter *)
 val ov = "OV"				(* overflow value (edx en el 386) *)
-val calldefs = [rv]
+val calldefs = [rv, "r1", "r2", "r3"]
 val specialregs = [fp, sp, lr, pc]
 val argregs = [rv, "r1", "r2", "r3"]
 val callersaves = ["r0","r1","r2","r3"]
@@ -64,13 +64,11 @@ type frame = {
 
 type register = string
 type strfrag = tigertemp.label * string
+type procfrag = {body: tigertree.stm, frame: frame}
+type cproc  = {body: tigertree.stm list, frame: frame} 
+type iproc = tigerassem.instr list * frame
 
-datatype frag = PROC of {body: tigertree.stm, frame: frame} | STRING of strfrag 
-
-datatype canonfrag = CPROC of {body: tigertree.stm list, frame: frame} | CSTR of strfrag
-
-datatype instrfrag = IPROC of (tigerassem.instr list * frame) | ISTR of strfrag
-
+datatype frag = PROC of procfrag | STRING of strfrag 
 
 fun allocArg (f: frame) b = 
 let
@@ -131,6 +129,8 @@ fun maxRegFrame(f: frame) = !(#actualReg f)
   
 fun exp(InFrame k) e = (if (k >= 0) then MEM(BINOP(PLUS, e, CONST k)) else MEM(BINOP(MINUS, e, CONST (~k))))
 	| exp(InReg l) _ = TEMP l
+	
+	
 fun externalCall(s, l) = CALL(NAME s, l)
 
 
@@ -196,7 +196,7 @@ fun procEntryExit2 (frame, body) =
 	body   @ [tigerassem.OPER{assem="", src=[rv(*,sp*)] (* @ calleesaves *), dst=[], jump=SOME[]}] 
 
 
-fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\n\n\n\n\t@prologo:\n"^
+fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\t@prologo:\n"^
                                                     ".global " ^ #name frame ^ "\n" ^
                                                    "\t" ^ #name frame ^ ":\n" ^  
                                  
@@ -212,7 +212,12 @@ fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\n\n\n\n\t@prologo:\n"^
                                              }
 
 
-fun genstring (lab, str) = "\t.align\t2\n"^lab^":\n\t.ascii\t\""^str^"\"\n"
+
+fun genstring (lab, str) = "\t.align\t2\n"^lab^":\n"^
+							"\t.long\t"^(Int.toString (String.size str))^"\n"^
+							"\t.ascii\t\""^str^"\"\n"
+							
+
 
 
 end
