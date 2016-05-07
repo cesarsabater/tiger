@@ -203,10 +203,10 @@ fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\n\n\n\n\t@prologo:\n"^
                                                    "\tpush "^mkpushlist backup^"\n"^
 
                                                    "\tsub     fp, sp, #4\n" ^ 
-                                                   "\tsub     sp, $"^(Int.toString (!(#localsInFrame frame) * wSz ))^"\n\n",
+                                                   "\tsub     sp, #"^(Int.toString (!(#localsInFrame frame) * wSz ))^"\n\n",
                                     body = instrs,
                                     epilog = "@epilogo\n"^ 
-											"\tadd     sp, $"^(Int.toString (!(#localsInFrame frame) * wSz))^"\n"^
+											"\tadd     sp, #"^(Int.toString (!(#localsInFrame frame) * wSz))^"\n"^
                                              "\tpop "^mkpushlist restore^"\n"
                                             
                                              }
