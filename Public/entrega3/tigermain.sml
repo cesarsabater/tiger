@@ -72,7 +72,11 @@ fun main(args) =
 		
 		val progname = "program.s" 
 		val compiler = if eabihf then ("arm-linux-gnueabihf-gcc -march=armv7-a") else ("arm-linux-gnueabi-gcc -march=armv7-a") 
-		val TheCode =   "        .file     \""^progname^"\"\n"^
+		val TheCode =   "\t.syntax unified\n"^
+                        "\t.arch armv7-a\n"^
+                        "\t.thumb\n"^
+                        "        .file     \""^progname^"\"\n"^
+
 						"        .section  .rodata\n"^
 						strings_final^
 						"        .text\n"^
