@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 
-int *initArray(int size, int init)
+int *_initArray(int size, int init)
 {int i;
  int *a = (int *)malloc(sizeof(int) + size*sizeof(int));
  a[0]=size;

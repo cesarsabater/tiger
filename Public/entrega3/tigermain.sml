@@ -21,9 +21,10 @@ fun main(args) =
 		val (canon, l4)		= arg(l3, "-canon") 
 		val (code, l5)		= arg(l4, "-code") 
 		val (flow, l6)		= arg(l5, "-flow") 
-		val (inter, l7)		= arg(l6, "-inter") 
+		val (inter, l7)		= arg(l6, "-inter")
+		val (eabihf,l8)     = arg(l7, "-hf") 
 		val entrada =
-			case l7 of
+			case l8 of
 			[n] => ((open_in n)
 					handle _ => raise Fail (n^" no existe!"))
 			| [] => std_in
@@ -70,7 +71,7 @@ fun main(args) =
       
 		
 		val progname = "program.s" 
-		val compiler = "arm-linux-gnueabi-gcc -march=armv7-a" 
+		val compiler = if eabihf then ("arm-linux-gnueabihf-gcc -march=armv7-a") else ("arm-linux-gnueabi-gcc -march=armv7-a") 
 		val TheCode =   "        .file     \""^progname^"\"\n"^
 						"        .section  .rodata\n"^
 						strings_final^
