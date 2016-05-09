@@ -71,7 +71,10 @@ fun main(args) =
 		
 		val progname = "program.s" 
 		val compiler = "arm-linux-gnueabi-gcc -march=armv7-a" 
-		val TheCode =   "        .file     \""^progname^"\"\n"^
+		val TheCode =   "\t.syntax unified\n"^
+                        "\t.arch armv7-a\n"^
+                        "\t.thumb\n"^
+                        "        .file     \""^progname^"\"\n"^
 						"        .section  .rodata\n"^
 						strings_final^
 						"        .text\n"^

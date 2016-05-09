@@ -197,6 +197,7 @@ fun procEntryExit2 (frame, body) =
 
 
 fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\t@prologo:\n"^
+                                                    ".align 2\n"^ 
                                                     ".global " ^ #name frame ^ "\n" ^
                                                    "\t" ^ #name frame ^ ":\n" ^  
                                  
