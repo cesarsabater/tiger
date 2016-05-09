@@ -1,11 +1,7 @@
-<<<<<<< HEAD
-#undef __STDC__
-#include <stdio.h>
-=======
 //#undef __STDC__
 #include <stdio.h>
 #include <stdlib.h>
->>>>>>> 09167a4a6ff6841069ae5d953e73a1dc345aea7c
+
 
 
 int *initArray(int size, int init)
