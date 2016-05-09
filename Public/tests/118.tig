@@ -1,17 +1,13 @@
 let 
-  function f (a : int,b :int,c: int) : int = let var d := 0
-                                          var e := a
-                                      in 
-                                        d := d + b ;
-                                        e := e - 1 ;
-                                        while (e > 0) 
-                                        do (
-                                          d := d + b ;
-                                          e := e - 1 
-                                        ) ; 
-                                        d + c
-                                      end 
+  function f (a : int,b :int,c: int,d :int ) : int = 
+      let var x := 42 
+          function g(y :int) :int = x + y + d
+      in 
+         g(d) + a + b + c
+       end                                      
+      
+                       
   
 in
-  f(3,5,7)
+  f(3,5,7,11)
 end

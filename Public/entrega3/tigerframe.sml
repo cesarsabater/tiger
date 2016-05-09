@@ -21,17 +21,17 @@ open tigertree
 
 type level = int
 
-val fp = "r11"				(* frame pointer *)
+val fp = "fp"				(* frame pointer *)
 val rv = "r0"				(* return value  *) 
 val sp = "sp"				(* stack pointer *)
 val lr = "lr"				(* link register *) 
 val pc = "pc"  				(* program counter *)
 val ov = "OV"				(* overflow value (edx en el 386) *)
-val calldefs = [rv]
+val calldefs = [rv, "r1", "r2", "r3"]
 val specialregs = [fp, sp, lr, pc]
 val argregs = [rv, "r1", "r2", "r3"]
 val callersaves = ["r0","r1","r2","r3"]
-val calleesaves = ["r4","r5","r6","r7","r8","r9","r10","r11"]
+val calleesaves = ["r4","r5","r6","r7","r8","r9","r10", fp]
 val usable = ["r0","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10"]
 val backup = calleesaves@[lr]  (* backup y restore deben estar alineados *)
 val restore = calleesaves@[pc]
@@ -42,7 +42,7 @@ val fpPrev = 0				(* offset (bytes) *)
 val backupGap = wSz * (List.length backup)
 val argsInicial = 0(* cantidad *)
 val argsGap = wSz			(* bytes *)
-val argsOffInicial = backupGap + argsGap 	(* words *)
+val argsOffInicial = backupGap + wSz (* words *)
 val regInicial = 1			(* reg *)
 val localsInicial = 0		(* words *)
 val numLocalsInicial = 0    (* sreg *)
@@ -64,31 +64,30 @@ type frame = {
 
 type register = string
 type strfrag = tigertemp.label * string
+type procfrag = {body: tigertree.stm, frame: frame}
+type cproc  = {body: tigertree.stm list, frame: frame} 
+type iproc = tigerassem.instr list * frame
 
-datatype frag = PROC of {body: tigertree.stm, frame: frame} | STRING of strfrag 
-
-datatype canonfrag = CPROC of {body: tigertree.stm list, frame: frame} | CSTR of strfrag
-
-datatype instrfrag = IPROC of (tigerassem.instr list * frame) | ISTR of strfrag
-
+datatype frag = PROC of procfrag | STRING of strfrag 
 
 fun allocArg (f: frame) b = 
-	case b of
-	true =>
-		let	val ret = (!(#actualArg f)*wSz + argsOffInicial)
-			val _ = #actualArg f := !(#actualArg f)+1
-		in	InFrame ret end
-
-	| false =>  InReg(tigertemp.newtemp())
+let
+val acc = case b of 
+	  true => InFrame (!(#actualArg f)*wSz + argsOffInicial)
+	| false => InReg (tigertemp.newtemp())
+in 
+	#actualArg f := !(#actualArg f)+1;
+	acc
+end
 
 
 fun allocLocal (f: frame) b = 
     case b of
         true =>
-            let	val ret = InFrame(!(#actualLocal f) -  localsGap)
+            let	val ret = InFrame(!(#actualLocal f))
             in	
                 #localsInFrame f := !(#localsInFrame f)+1;
-                #actualLocal f:=(!(#actualLocal f) - localsGap); 
+                #actualLocal f:=(!(#actualLocal f) - wSz); 
                 ret
             end (* esto está modificado, hay que verificar que esté bien! *)
         | false => InReg(tigertemp.newtemp())
@@ -130,6 +129,8 @@ fun maxRegFrame(f: frame) = !(#actualReg f)
   
 fun exp(InFrame k) e = (if (k >= 0) then MEM(BINOP(PLUS, e, CONST k)) else MEM(BINOP(MINUS, e, CONST (~k))))
 	| exp(InReg l) _ = TEMP l
+	
+	
 fun externalCall(s, l) = CALL(NAME s, l)
 
 
@@ -159,7 +160,7 @@ let
 							TEMP (List.nth(argregs,n))) :: aux accs (n+1) 
 			else if not (List.nth ((#formals fr), n)) then (* si no escapa la copiamos a un temp *) 
 			let 
-				val varoffset = ((n - List.length argregs)+localsGap)*wSz
+				val varoffset = (n - List.length argregs)*wSz + argsOffInicial
 				val src = (if (varoffset >= 0) then MEM(BINOP(PLUS,CONST varoffset, TEMP fp)) 
 				                               else MEM(BINOP(MINUS,CONST (~varoffset), TEMP fp))) 
 			in
@@ -170,36 +171,53 @@ let
 	val moveargs = aux (!argsAcc) 0 (*Instrucciones para mover de los 
 										argumentos a los locals donde la 
 										función ve internamente las cosas *)
+										
+	
+(*
 	val freshtmps = List.tabulate (List.length calleesaves, 
 									fn _ => TEMP (tigertemp.newtemp()))
+*)
+(*
 	val moves = ListPair.zip(freshtmps, List.map TEMP calleesaves)
+*)
+(*
 	val saveregs = List.map MOVE moves (* Instrucciones para salvar en temporarios los callee saves *)
-	
+*)
+(*
 	val revmoves = List.map (fn(x,y) => (y,x)) moves
-	val restoreregs = List.map MOVE revmoves (* Restaurar los callee saves *)
+	val restoreregs = List.map MOVE revmoves 
+*)
+	(* Restaurar los callee saves *)
 in 
 	seq( (*saveregs @ *) moveargs @ [body] (* @ restoreregs*) ) 
 end
 
 fun procEntryExit2 (frame, body) = 
-	body @ [tigerassem.OPER{assem="", src=[rv,sp] @ calleesaves, dst=[], jump=SOME[]}]
+	body   @ [tigerassem.OPER{assem="", src=[rv(*,sp*)] (* @ calleesaves *), dst=[], jump=SOME[]}] 
 
 
-fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\n\n\n\n\t#prologo:\n"^
+fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\t@prologo:\n"^
                                                     ".global " ^ #name frame ^ "\n" ^
                                                    "\t" ^ #name frame ^ ":\n" ^  
-                                                   
+                                 
                                                    "\tpush "^mkpushlist backup^"\n"^
-                                                   "\tmov     r11,sp\n" ^ 
+
+                                                   "\tsub     fp, sp, #4\n" ^ 
                                                    "\tsub     sp, $"^(Int.toString (!(#localsInFrame frame) * wSz ))^"\n\n",
                                     body = instrs,
-                                    epilog = "\tadd     sp, $"^(Int.toString (!(#localsInFrame frame) * wSz))^"\n"^
-                                             "\tpop "^mkpushlist restore^"\n"^
-                                             "\t#epilogo: "^(#name frame)^"\n"
+                                    epilog = "@epilogo\n"^ 
+											"\tadd     sp, $"^(Int.toString (!(#localsInFrame frame) * wSz))^"\n"^
+                                             "\tpop "^mkpushlist restore^"\n"
+                                            
                                              }
 
 
-fun genstring (lab, str) = "\t.align\t2\n"^lab^":\n\t.ascii\t\""^str^"\"\n"
+
+fun genstring (lab, str) = "\t.align\t2\n"^lab^":\n"^
+							"\t.long\t"^(Int.toString (String.size str))^"\n"^
+							"\t.ascii\t\""^str^"\"\n"
+							
+
 
 
 end

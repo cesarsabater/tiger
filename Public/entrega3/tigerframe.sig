@@ -33,9 +33,10 @@ val procEntryExit1 : frame * tigertree.stm -> tigertree.stm
 val procEntryExit2 : frame * tigerassem.instr list -> tigerassem.instr list
 val procEntryExit3 : frame * tigerassem.instr list -> { prolog : string, body: tigerassem.instr list, epilog : string }
 type strfrag = tigertemp.label * string
-datatype frag = PROC of {body: tigertree.stm, frame: frame} | STRING of strfrag 
-datatype canonfrag = CPROC of {body: tigertree.stm list, frame: frame} | CSTR of strfrag
-datatype instrfrag = IPROC of (tigerassem.instr list * frame) | ISTR of strfrag
+type procfrag = {body: tigertree.stm, frame: frame}
+type cproc  = {body: tigertree.stm list, frame: frame} 
+type iproc = tigerassem.instr list * frame
+datatype frag = PROC of procfrag | STRING of strfrag 
 val genstring: strfrag -> string
 
 

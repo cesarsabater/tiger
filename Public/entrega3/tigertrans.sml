@@ -19,6 +19,7 @@ fun getActualLev() = !actualLevel
 
 val outermost: level = {parent=NONE,
 	frame=newFrame{name="_tigermain", formals=[]}, level=getActualLev()}
+	
 fun newLevel{parent={parent, frame, level}, name, formals} =
 	{
 		(* consultar si esto está bien! como hacer newLevel!! *)
@@ -133,11 +134,12 @@ fun stringExp(s: string) =
 (*
 		val len = ".long "^makestring(stringLen s)
 *)
+
 (*
 		val str = ".string \""^s^"\""
 *)
 (*
-		val _ = datosGlobs:=(!datosGlobs @ [STRING(l, len), STRING("", str)])
+		val _ = datosGlobs:=(!datosGlobs @ [ (* STRING(l, len), *)STRING("", str)])
 *)
         val _ = datosGlobs:=(!datosGlobs @ [STRING(l, s)])
 	in	Ex(NAME l) end
