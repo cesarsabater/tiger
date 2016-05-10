@@ -194,9 +194,9 @@ fun transExp(venv, tenv) =
 						in 
 							aux flds ((e',i')::r)
 						end
-				val r = aux fields []
+				val proccessedFields = aux fields []
 			in 
-				if (not (isRepList (map #2 r))) then {exp=recordExp r, ty=tyr}
+				if (not (isRepList (map #2 proccessedFields))) then {exp=recordExp proccessedFields, ty=tyr}
 				else error("Hay campos repetidos", nl)
 			end
 			

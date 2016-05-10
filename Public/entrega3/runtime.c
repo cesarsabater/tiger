@@ -19,11 +19,16 @@ void _checkIndexArray(int *a, int i)
 	}
 }
 
-int *allocRecord(int size)
+void _checkNil(int *a) {
+	//if (a == 0) 
+		return;
+}
+
+int *_allocRecord(int size)
 {int i;
  int *p, *a;
  p = a = (int *)malloc(size);
- for(i=0;i<size;i+=sizeof(int)) *p++ = 0;
+ //for(i=0;i<size;i++) *p++ = initvalues[i];
  return a;
 }
 
