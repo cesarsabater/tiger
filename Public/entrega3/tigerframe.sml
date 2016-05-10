@@ -219,6 +219,19 @@ fun genstring (lab, str) = "\t.align\t2\n"^lab^":\n"^
 							"\t.ascii\t\""^str^"\"\n"
 							
 
+fun head_foot (rodata, text, progname, archbanana) = 
+let 
+	fun archbonly str = if archbanana then str else ""
+in 
+	(archbonly "\t.syntax unified\n")^
+			   "\t.arch armv7-a\n"^
+	(archbonly "\t.thumb\n")^
+			   "\t.file\t\""^progname^"\"\n"^
+				"\t.section\t.rodata\n"^
+				 rodata^
+				"\t.text\n"^
+				 text
+end	
 
 
 end

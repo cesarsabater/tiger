@@ -69,21 +69,12 @@ fun main(args) =
         val strings_final = concat (List.map tigerframe.genstring strings)
         val functions_final = concat (List.map bigcolor uncolored_frags)
       
-		
-		val progname = "program.s" 
-		val compiler = if eabihf then ("arm-linux-gnueabihf-gcc -march=armv7-a") else ("arm-linux-gnueabi-gcc -march=armv7-a") 
-		val TheCode =   "\t.syntax unified\n"^
-                        "\t.arch armv7-a\n"^
-                        "\t.thumb\n"^
-                        "        .file     \""^progname^"\"\n"^
-
-						"        .section  .rodata\n"^
-						strings_final^
-						"        .text\n"^
-						functions_final
-		
+		val compiler = case eabihf of true => "arm-linux-gnueabihf-gcc -march=armv7-a"
+									| false => "arm-linux-gnueabi-gcc -march=armv7-a" 	
+		val progname = "program.s"
+		val TheCode =   tigerframe.head_foot (strings_final, functions_final, progname, eabihf)
+						
 		val _ = (print "\nCODIGO FINAL:\n\n"; print TheCode)
-		
 		
 		val outFile = (TextIO.openOut (progname))
                               handle _ => raise Fail "Falló al abrir el archivo de salida"

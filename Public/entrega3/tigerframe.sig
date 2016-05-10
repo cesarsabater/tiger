@@ -38,6 +38,6 @@ type cproc  = {body: tigertree.stm list, frame: frame}
 type iproc = tigerassem.instr list * frame
 datatype frag = PROC of procfrag | STRING of strfrag 
 val genstring: strfrag -> string
-
+val head_foot: string * string * string * bool -> string
 
 end
