@@ -1,6 +1,7 @@
 //#undef __STDC__
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 
 int *_initArray(int size, int init)
@@ -8,7 +9,7 @@ int *_initArray(int size, int init)
  int *a = (int *)malloc(sizeof(int) + size*sizeof(int));
  a[0]=size;
  for(i=1;i<=size;i++) a[i]=init;
- return &(a[1]);
+ return a+1;
 }
 
 void _checkIndexArray(int *a, int i)
@@ -20,15 +21,17 @@ void _checkIndexArray(int *a, int i)
 }
 
 void _checkNil(int *a) {
-	//if (a == 0) 
-		return;
+	if (a == 0) 
+		exit (-1);
 }
 
-int *_allocRecord(int size)
+int *_allocRecord(int size, ...)
 {int i;
  int *p, *a;
- p = a = (int *)malloc(size);
- //for(i=0;i<size;i++) *p++ = initvalues[i];
+ va_list va; 
+ p = a = (int *)malloc(size*sizeof(int));
+ va_start(va, size);
+ for(i=0;i<size;i++) *p++ = va_arg(va, int);
  return a;
 }
 
@@ -45,6 +48,10 @@ int stringEqual(struct string *s, struct string *t)
 void print(struct string *s)
 {int i; unsigned char *p=s->chars;
  for(i=0;i<s->length;i++,p++) putchar(*p);
+}
+
+void printInteger(int number) {
+	printf("%d", number); 
 }
 
 void flush()
