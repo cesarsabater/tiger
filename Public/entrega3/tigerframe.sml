@@ -31,8 +31,11 @@ val calldefs = [rv, "r1", "r2", "r3"]
 val specialregs = [fp, sp, lr, pc]
 val argregs = [rv, "r1", "r2", "r3"]
 val callersaves = ["r0","r1","r2","r3"]
-val calleesaves = ["r4","r5","r6","r7","r8","r9","r10", fp]
-val usable = ["r0","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10"]
+(**)val calleesaves = ["r4","r5","r6","r7","r8","r9","r10", fp] (**)
+(**)val usable = ["r0","r1","r2","r3","r4","r5","r6","r7","r8","r9","r10"] (**)
+(*val calleesaves = ["r4","r5","r6","r7", fp]  *)
+(*val usable = ["r0","r1","r2","r3","r4","r5","r6","r7"] *)
+
 val backup = calleesaves@[lr]  (* backup y restore deben estar alineados *)
 val restore = calleesaves@[pc]
 val wSz = 4					(* word size in bytes *)
