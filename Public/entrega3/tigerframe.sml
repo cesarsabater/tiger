@@ -216,7 +216,7 @@ fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\t@prologo:\n"^
 
 fun genstring (lab, str) = "\t.align\t2\n"^lab^":\n"^
 							"\t.long\t"^(Int.toString (String.size str))^"\n"^
-							"\t.ascii\t\""^str^"\"\n"
+							"\t.ascii\t\""^(String.toCString str)^"\"\n"
 							
 
 fun head_foot (rodata, text, progname, archbanana) = 
