@@ -141,7 +141,11 @@ fun stringExp(s: string) =
 (*
 		val _ = datosGlobs:=(!datosGlobs @ [ (* STRING(l, len), *)STRING("", str)])
 *)
-        val _ = datosGlobs:=(!datosGlobs @ [STRING(l, s)])
+		val cs = case String.fromCString s of  
+				 SOME str => str
+				| NONE => ""
+		
+        val _ = datosGlobs:=(!datosGlobs @ [STRING(l, cs)])
 	in	Ex(NAME l) end
 	
 fun preFunctionDec() =

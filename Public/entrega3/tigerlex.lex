@@ -9,8 +9,8 @@ fun dec r = (r:=(!r-1); !r)
 fun aHex n =
 	"\\x"^(if n<=15 then "0" else "")^
 	(Int.fmt StringCvt.HEX n)
-fun ctrl0 "\\n" = "\\x0a"
-| ctrl0 "\\t" = "\\x09"
+fun ctrl0 "\\n" = "\n"
+| ctrl0 "\\t" = "\t"
 | ctrl0 _ = raise Fail "error interno 1 en lex!"
 fun ctrl1 s =
 	let	val c = ord(hd(tl(tl(explode s))))
