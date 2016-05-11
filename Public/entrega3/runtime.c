@@ -1,4 +1,3 @@
-//#undef __STDC__
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -37,12 +36,13 @@ int *_allocRecord(int size, ...)
 
 struct string {int length; unsigned char chars[1];};
 
-int stringEqual(struct string *s, struct string *t)
-{int i;
- if (s==t) return 1;
- if (s->length!=t->length) return 0;
- for(i=0;i<s->length;i++) if (s->chars[i]!=t->chars[i]) return 0;
- return 1;
+int _stringcmp(struct string *s, struct string *t)
+{
+ if (s==t) return 0;
+ int i;
+ int bound = (s->length < t->length) ? s->length : t->length;
+ for(i=0;i<bound;i++) if (s->chars[i]!=t->chars[i]) return s->chars[i] - t->chars[i];
+ return (s->length - t->length);
 }
 
 void print(struct string *s)
@@ -122,9 +122,7 @@ int not(int i)
 { return !i;
 }
 
-#undef getchar
-
-struct string *ourgetchar()
+struct string *getstr()
 {int i=getc(stdin);
  if (i==EOF) return &empty;
  else return consts+i;
