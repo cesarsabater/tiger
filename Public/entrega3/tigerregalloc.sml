@@ -20,17 +20,15 @@ open tigerassem
          (*Code gen Store and fetch instr*)
           fun storeTemp(temp, mempos) =
 			 let
-				val desp = if mempos<0 then " - " ^ Int.toString(~mempos) else if mempos>0 then " + " ^ Int.toString(mempos) else ""
+				val desp = if mempos<0 then "-" ^ Int.toString(~mempos) else if mempos>=0 then "+" ^ Int.toString(mempos) else ""
 			 in
-				print ("teeeeeeeeeeeeeeemp"^temp^"\n")  ;
-				emit(OPER {assem="str 's0 [falta fp,#" ^ desp ^ "]\n", src=[temp,tigerframe.fp], dst=[], jump=NONE}) 
+				emit(OPER {assem="str     's0, [fp,#" ^ desp ^ "]\n", src=[temp,tigerframe.fp], dst=[], jump=NONE}) 
 			 end
           fun fetchTemp(temp, mempos) =
 	         let
-		 		val desp = if mempos<0 then " - " ^ Int.toString(~mempos) else if mempos>0 then " + " ^ Int.toString(mempos) else ""
+		 		val desp = if mempos<0 then "-" ^ Int.toString(~mempos) else if mempos>=0 then "+" ^ Int.toString(mempos) else ""
 	  	     in
-	  	        print ("teeeeeeeeeeeeeeemp"^temp^"\n")  ;
-				emit(OPER {assem="ldr 'd0 [falta fp,#" ^ desp ^ "]\n", src=[tigerframe.fp], dst=[temp], jump=NONE})
+				emit(OPER {assem="ldr     'd0, [fp,#" ^ desp ^ "]\n", src=[tigerframe.fp], dst=[temp], jump=NONE})
 			 end
           
           
