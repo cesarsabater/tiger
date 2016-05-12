@@ -14,6 +14,8 @@ let
 	
 	fun imm12 x = ((x >= 0) andalso (x <= 4095)) (*then true else false*)   
     
+    val immConst = 65536
+    
     fun negoffset x = (x < 256)          (*Puede ser 4095 en ARM. Si es Thumb es 256, pongo 256 por las dudas *)
 
 
@@ -296,6 +298,15 @@ let
 	             jump = NONE }))            
 	             
 	  | munchExp (CONST i) =
+	      let val assemstr = if (i < immConst) then  "movw   'd0, #" ^ Int.toString i ^ "\n" else( 
+	                                                 "movw   'd0, #:lower16:" ^ Int.toString i ^ "\n" ^
+	                                                 "movt   'd0, #:upper16:" ^ Int.toString i ^ "\n") 
+	      in 
+	         result(fn r => emit(OPER
+	            {assem = assemstr,
+	             src = [] , dst = [r],
+	             jump = NONE }))
+(*
 	      let 
 				val bound8 = 256
 				val bound16 = 65536
@@ -310,6 +321,7 @@ let
 							"movt   'd0, #:upper16:" ^ Int.toString i ^ "\n"
 	      in 
 			result(fn r => emit(OPER {assem = assm, src = [] , dst = [r], jump = NONE }))
+*)
 	      end                
 	  
 	  | munchExp (NAME lab) =
