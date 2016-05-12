@@ -22,9 +22,10 @@ fun main(args) =
 		val (code, l5)		= arg(l4, "-code") 
 		val (flow, l6)		= arg(l5, "-flow") 
 		val (inter, l7)		= arg(l6, "-inter")
-		val (eabihf,l8)     = arg(l7, "-hf") 
+		val (eabihf,l8)     = arg(l7, "-hf")
+		val (arm32, l9)     = arg(l8, "-arm32") 
 		val entrada =
-			case l8 of
+			case l9 of
 			[n] => ((open_in n)
 					handle _ => raise Fail (n^" no existe!"))
 			| [] => std_in
@@ -68,9 +69,11 @@ fun main(args) =
      
         val strings_final = concat (List.map tigerframe.genstring strings)
         val functions_final = concat (List.map bigcolor uncolored_frags)
-      
-		val compiler = case eabihf of true => "arm-linux-gnueabihf-gcc -march=armv7-a"
-									| false => "arm-linux-gnueabi-gcc -march=armv7-a" 	
+       
+        val a32 = if arm32 then " -marm " else ""
+       
+		val compiler = case eabihf of true => "arm-linux-gnueabihf-gcc -march=armv7-a" ^ a32
+									| false => "arm-linux-gnueabi-gcc -march=armv7-a" ^ a32	
 		val progname = "program.s"
 		val TheCode =   tigerframe.head_foot (strings_final, functions_final, progname, eabihf)
 						
