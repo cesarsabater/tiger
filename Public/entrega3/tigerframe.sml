@@ -231,6 +231,7 @@ in
 			   "\t.arch armv7-a\n"^
 	 (*(archbonly "\t.thumb\n")^ *)
 			   "\t.file\t\""^progname^"\"\n"^
+			   "\t.global\t__aeabi_idiv\n"^  (* modulo de division *)
 				"\t.section\t.rodata\n"^
 				 rodata^
 				"\t.text\n"^
