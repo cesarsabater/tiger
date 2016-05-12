@@ -484,7 +484,7 @@ let
 	val l = unEx left
 	val r = unEx right
 	val cmp = externalCall("_stringcmp", [l, r])
-in 
+in
 	case oper of
 		EqOp => Cx (fn (t, f) => CJUMP(EQ, CONST 0, cmp, t, f))
 	  | NeqOp => Cx (fn (t, f) => CJUMP(NE, CONST 0, cmp, t, f))

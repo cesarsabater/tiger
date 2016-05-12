@@ -11,9 +11,10 @@ let
 	val ilist = ref (nil: instr list)
 	fun emit x = ilist := x :: !ilist
 
-    fun imm12 x = ((x >= 0) andalso (x <= 4095)) (*then true else false*)  
+	
+	fun imm12 x = ((x >= 0) andalso (x <= 4095)) (*then true else false*)   
     
-    val immConst = 256
+    val immConst = 65536
     
     fun negoffset x = (x < 256)          (*Puede ser 4095 en ARM. Si es Thumb es 256, pongo 256 por las dudas *)
 
@@ -44,7 +45,7 @@ let
 	                             | GE   => "bge"
 	                             | LE   => "ble"
 	                             | NE   => "bne"
-	                             | ULT  => "blo"    
+	                             | ULT  => "blo" 
 	                             | ULE  => "bls"
 	                             | UGT  => "bhi"
 	                             | UGE  => "bhs"
@@ -54,7 +55,6 @@ let
 	                   jump = SOME [lab1,lab2] })
 	                   
 	    end               
-	  
 
 	  | munchStm (JUMP (NAME (lab), _)) =
 	    emit (OPER {assem = "b       "^lab^"\n",
@@ -255,7 +255,6 @@ let
 	 
 	| munchExp (MEM (BINOP (PLUS, e1, CONST i))) = munchExp(MEM (BINOP (PLUS, CONST i, e1)))
  
-	          
 	| munchExp (MEM (BINOP (MINUS, CONST i, e1))) = 
 	    if (negoffset i) then  
 	     result(fn r => emit(OPER
@@ -299,16 +298,27 @@ let
 	             jump = NONE }))            
 	             
 	  | munchExp (CONST i) =
-	      let val movstr = if (i < immConst) then  "mov    'd0, #" ^ Int.toString i ^ "\n" else( 
-	                                               "movw   'd0, #:lower16:" ^ Int.toString i ^ "\n" ^
-	                                               "movt   'd0, #:upper16:" ^ Int.toString i ^ "\n") 
+	      let val assemstr = if (i < immConst) then  "mov    'd0, #" ^ Int.toString i ^ "\n" else( 
+	                                                 "movw   'd0, #:lower16:" ^ Int.toString i ^ "\n" ^
+	                                                 "movt   'd0, #:upper16:" ^ Int.toString i ^ "\n") 
 	      in 
 	         result(fn r => emit(OPER
-	            {assem = movstr,
+	            {assem = assemstr,
 	             src = [] , dst = [r],
 	             jump = NONE }))
+(*
+	      let 
+				val bound16 = 65536
+				(* val i32 = if (i >= 65536) then "32  " else "    " *)
+				val assm = if i > 0 andalso i < bound16 then
+							"movw 'd0, #" ^ Int.toString i ^ "\n"
+						   else 
+							"movw   'd0, #:lower16:" ^ Int.toString i ^ "\n" ^
+							"movt   'd0, #:upper16:" ^ Int.toString i ^ "\n"
+	      in 
+			result(fn r => emit(OPER {assem = assm, src = [] , dst = [r], jump = NONE }))
+*)
 	      end                
-	             
 	  
 	  | munchExp (NAME lab) =
 	      result (fn r => emit(OPER
