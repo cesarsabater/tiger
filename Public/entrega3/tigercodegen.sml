@@ -72,11 +72,11 @@ let
 	                jump = SOME labels })
 	 
 	 
-	 (**************************)
+	 (*-------------Munchea CALLs-------------------*)  
 	 | munchStm (MOVE(TEMP x,CALL a)) = munchStm(SEQ(EXP(CALL a),MOVE(TEMP x,TEMP tigerframe.rv)))
 	     
 	  
-    (*-------------Munchea CALLs-------------------*)  
+    
 
      | munchStm (EXP(CALL (NAME lf,args))) =
      
@@ -141,6 +141,8 @@ let
 
       (*----------------Accesos a Memoria--------------*)   
  
+      (*--------str e1 [sp,#offset]-------------El offset tiene que ser mult de 4*)
+ 
       | munchStm (MOVE(MEM(BINOP(PLUS, CONST i, TEMP sp)), e1  )) =  (*V*) (* i mult de 4 entre 0 y 1020*)
 	     
 	     ((if (i mod 4 = 0) then () else raise Fail "offset del sp tiene que ser multiplo de 4\n") ;  
@@ -156,8 +158,11 @@ let
 	                dst = [],
 	                jump = NONE })))
 	      )            
+	  | munchStm (MOVE(MEM(BINOP(PLUS, TEMP sp, CONST i)), e1  ))  = munchStm (MOVE(MEM(BINOP(PLUS, CONST i, TEMP sp)), e1  )) 
 	  
-	  | munchStm (MOVE(MEM (BINOP(PLUS, CONST i, e2)), e1)) =
+	  (*----------str e1 [e2,#offset]-------------*)
+
+	  | munchStm (MOVE(MEM (BINOP(PLUS, e2, CONST i)), e1 )) =
 	  if imm12 i then
 	     emit(OPER {assem="str     's0, ['s1, #" ^ Int.toString i ^ "]\n",
 	                src = [munchExp e1,munchExp e2],
@@ -168,40 +173,18 @@ let
 	                src = [munchExp e1,munchExp (CONST i),munchExp e2],
 	                dst = [],
 	                jump= NONE })
-	                                  
-     | munchStm (MOVE(MEM (BINOP(PLUS, e2, CONST i)), e1 )) =
-	  if imm12 i then
-	     emit(OPER {assem="str     's0, ['s1, #" ^ Int.toString i ^ "]\n",
-	                src = [munchExp e1,munchExp e2],
-	                dst = [],
-	                jump= NONE })
-	  else 
-	     emit(OPER {assem="str     's0, ['s2, 's1]\n",
-	                src = [munchExp e1,munchExp (CONST i),munchExp e2],
-	                dst = [],
-	                jump= NONE })
-	                                     	 
+	    
+	  | munchStm (MOVE(MEM (BINOP(PLUS, CONST i, e2)), e1)) = munchStm (MOVE(MEM (BINOP(PLUS, e2, CONST i)), e1 ))                                 	 
 	                              
-	                 
+	  
+	  (*----------- str e1 [e2,e3] ----------------*)               
 	  | munchStm (MOVE(MEM (BINOP(PLUS, e2, e3)), e1)) =
 	     emit(OPER {assem="str     's0, ['s1, 's2]\n",
 	                src = [munchExp e1,munchExp e2,munchExp e3],
 	                dst = [],
 	                jump= NONE })  
-	    
 	  
-	  | munchStm (MOVE(MEM (BINOP(MINUS, CONST i, e2)),e1 )) =
-	  if (negoffset i) then
-	     emit(OPER {assem="str     's0, ['s1, #-" ^ Int.toString i ^ "]\n",
-	                src = [munchExp e1,munchExp e2],
-	                dst = [],
-	                jump= NONE })
-	  else 
-	     emit(OPER {assem="str     's0, ['s1]\n",
-	                src = [munchExp e1,munchExp(BINOP(MINUS, CONST i, e2))],
-	                dst = [],
-	                jump= NONE })
-	  
+	  (*-----------str e1 [e2,#-offset]------------*)
 	 | munchStm (MOVE(MEM (BINOP(MINUS, e2, CONST i)), e1)) =
 	  if (negoffset i) then
 	     emit(OPER {assem="str     's0, ['s1, #-" ^ Int.toString i ^ "]\n",
@@ -214,19 +197,20 @@ let
 	                dst = [],
 	                jump= NONE })
 	  
-	  
-	  | munchStm (MOVE(MEM e1, e2)) =
-	     emit(OPER {assem= "str     's1,['s0]\n",
+	  (*-----------str e1 [e2]--------------*)
+	  | munchStm (MOVE(MEM e2, e1)) =
+	     emit(OPER {assem= "str     's0,['s1]\n",
 	                src = [munchExp e1,munchExp e2], 
 	                dst = [],
 	                jump = NONE }) 
 	                
+	   (*-----------mov t1  e2-------------*)             
 	   | munchStm (MOVE(TEMP t1, e2)) = 
 	     emit(tigerassem.MOVE {assem= "mov     'd0, 's0\n",
 	                src = munchExp e2,
 	                dst = t1})
 	  
-	  
+	  (*------Munch LABEL-----------------*)
 	  | munchStm (tigertree.LABEL lab) = 
 	     emit( tigerassem.LABEL { assem = lab ^ ": \n" , lab = lab} )
 	     
@@ -245,6 +229,8 @@ let
   	
 	 | munchExp (CALL _) = raise Fail "Este caso CALL no debería aparecer por el canonizar" 
 	
+	
+	 (*----------------ldr r [e1,#offset]----------------*)
 	 | munchExp (MEM (BINOP (PLUS, CONST i, e1))) = 
 	    if (imm12 i) then  
 	     result(fn r => emit(OPER
@@ -259,7 +245,8 @@ let
 	 
 	| munchExp (MEM (BINOP (PLUS, e1, CONST i))) = munchExp(MEM (BINOP (PLUS, CONST i, e1)))
  
-	| munchExp (MEM (BINOP (MINUS, CONST i, e1))) = 
+    (*--------------ldr r [e1,#-offset]----------------------*)
+	| munchExp (MEM (BINOP (MINUS, e1, CONST i))) = 
 	    if (negoffset i) then  
 	     result(fn r => emit(OPER
 	            {assem = "ldr     'd0, ['s0, #-" ^ Int.toString i ^ "]\n",
@@ -269,19 +256,27 @@ let
 	     result(fn r => emit(OPER
 	            {assem = "ldr     'd0, ['s0]\n",
 	             src = [munchExp (BINOP (MINUS, CONST i, e1))], dst = [r],
-	             jump = NONE }))                   
-	  
-	  | munchExp (MEM (BINOP (MINUS, e1, CONST i))) = munchExp (MEM (BINOP (MINUS, CONST i, e1)))  
-			
-	  | munchExp (BINOP (DIV,e1,e2)) = 
+	             jump = NONE }))    
+	             
+	(*---------------ldr r [e1]-----------------------------*)                
+	| munchExp (MEM e1) =
+	      
+	      result(fn r => emit(OPER
+	            {assem = "ldr    'd0, ['s0]\n",
+	             src = [munchExp e1], dst = [r],
+	             jump = NONE }))                            
+	    
+	 (*-------------Munch Integer Division---------------------*)   
+	 | munchExp (BINOP (DIV,e1,e2)) = 
 			( 
 			  munchStm(EXP(CALL (NAME "__aeabi_idiv", [e1, e2]))) ; 
 			  result(fn r => emit(tigerassem.MOVE 
 	            {assem = "mov 'd0, 's0\n",
 	             src = tigerframe.rv, dst = r}))
 	        )
-			
-	  | munchExp (BINOP (oper,e1,e2)) =
+	
+	 (*----------Munch BINOPS-----------------------------*)		
+	 | munchExp (BINOP (oper,e1,e2)) =
 	  
 	      let val op_instr = case oper of
 	                            PLUS    => "add "
@@ -302,12 +297,7 @@ let
 	             jump = NONE }))
 	  
 	      end              
-	  | munchExp (MEM e1) =
-	      
-	      result(fn r => emit(OPER
-	            {assem = "ldr    'd0, ['s0]\n",
-	             src = [munchExp e1], dst = [r],
-	             jump = NONE }))            
+	          
 	             
 	  | munchExp (CONST i) =
 	     let 
