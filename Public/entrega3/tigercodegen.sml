@@ -298,7 +298,7 @@ let
 	             jump = NONE }))            
 	             
 	  | munchExp (CONST i) =
-	      let val assemstr = if (i < immConst) then  "mov    'd0, #" ^ Int.toString i ^ "\n" else( 
+	      let val assemstr = if (i < immConst) then  "movw   'd0, #" ^ Int.toString i ^ "\n" else( 
 	                                                 "movw   'd0, #:lower16:" ^ Int.toString i ^ "\n" ^
 	                                                 "movt   'd0, #:upper16:" ^ Int.toString i ^ "\n") 
 	      in 
