@@ -424,7 +424,7 @@ end
 				end
 			else ();
 			app (fn d => app (fn l => AddEdge(l,d)) live) def'
-		end	
+		end
 	in  
 		List.app procInstr (rev (tigergraph.nodes control)); (*app aplica de izquierda a derecha entonces funca*)
 		initial := !(difference(initial, precolored))
