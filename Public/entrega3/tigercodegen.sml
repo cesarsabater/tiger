@@ -272,14 +272,22 @@ let
 	             jump = NONE }))                   
 	  
 	  | munchExp (MEM (BINOP (MINUS, e1, CONST i))) = munchExp (MEM (BINOP (MINUS, CONST i, e1)))  
-	
+			
+	  | munchExp (BINOP (DIV,e1,e2)) = 
+			( 
+			  munchStm(EXP(CALL (NAME "__aeabi_idiv", [e1, e2]))) ; 
+			  result(fn r => emit(tigerassem.MOVE 
+	            {assem = "mov 'd0, 's0\n",
+	             src = tigerframe.rv, dst = r}))
+	        )
+			
 	  | munchExp (BINOP (oper,e1,e2)) =
 	  
 	      let val op_instr = case oper of
 	                            PLUS    => "add "
 	                          | MINUS   => "sub "
 	                          | MUL     => "mul "
-	                          | DIV     => "udiv"
+	                          | DIV     => raise Fail "no deveria pasar (division)\n" 
 	                          | AND     => "and "
 	                          | OR      => "orr "
 	                          | XOR     => "eor "
