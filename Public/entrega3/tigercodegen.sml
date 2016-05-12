@@ -298,19 +298,9 @@ let
 	             jump = NONE }))            
 	             
 	  | munchExp (CONST i) =
-	      let val assemstr = if (i < immConst) then  "movw   'd0, #" ^ Int.toString i ^ "\n" else( 
-	                                                 "movw   'd0, #:lower16:" ^ Int.toString i ^ "\n" ^
-	                                                 "movt   'd0, #:upper16:" ^ Int.toString i ^ "\n") 
-	      in 
-	         result(fn r => emit(OPER
-	            {assem = assemstr,
-	             src = [] , dst = [r],
-	             jump = NONE }))
-(*
-	      let 
+	     let 
 				val bound8 = 256
 				val bound16 = 65536
-				(* val i32 = if (i >= 65536) then "32  " else "    " *)
 				val assm = if i > 0 andalso i < bound16 then
 							(if i < bound8 then 
 								"mov 'd0, #" ^ Int.toString i ^ "\n"
@@ -321,7 +311,7 @@ let
 							"movt   'd0, #:upper16:" ^ Int.toString i ^ "\n"
 	      in 
 			result(fn r => emit(OPER {assem = assm, src = [] , dst = [r], jump = NONE }))
-*)
+
 	      end                
 	  
 	  | munchExp (NAME lab) =
