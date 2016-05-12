@@ -202,6 +202,7 @@ fun procEntryExit2 (frame, body) =
 fun procEntryExit3 (frame:frame,instrs) = {prolog = "\n\t@prologo:\n"^
                                                     ".align 2\n"^ 
                                                     ".global " ^ #name frame ^ "\n" ^
+                                                    ".type   " ^ #name frame ^", %function\n" ^
                                                    "\t" ^ #name frame ^ ":\n" ^  
                                  
                                                    "\tpush "^mkpushlist backup^"\n"^
@@ -226,9 +227,9 @@ fun head_foot (rodata, text, progname, archbanana) =
 let 
 	fun archbonly str = if archbanana then str else ""
 in 
-	(archbonly "\t.syntax unified\n")^
+	(*(archbonly "\t.syntax unified\n")^*)
 			   "\t.arch armv7-a\n"^
-	(archbonly "\t.thumb\n")^
+	 (*(archbonly "\t.thumb\n")^ *)
 			   "\t.file\t\""^progname^"\"\n"^
 			   "\t.global\t__aeabi_idiv\n"^  (* modulo de division *)
 				"\t.section\t.rodata\n"^
