@@ -18,8 +18,12 @@ let
     
     fun negoffset x = (x < 256)          (*Puede ser 4095 en ARM. Si es Thumb es 256, pongo 256 por las dudas *)
 
-
-	
+    fun imm8m x = let val wx = Word.fromInt x 
+                      val i = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+                      fun imm8 w = let val x = Word.toInt w in (x >= 0) andalso (x < 256)  end       
+                  in    
+                     List.exists (fn k => imm8(Word.orb(Word.<<(wx,Word.fromInt(2*k)),Word.>>(wx,Word.fromInt(32-2*k))))) i
+	              end
     (*fun munchArgs (i,  []) = [] 
 	  | munchArgs (i,h::t) = emit (OPER {assem = "STMDB SP!, {s0}\n",
 	                                     src = [munchExp i],
