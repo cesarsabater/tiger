@@ -4,11 +4,12 @@ open tigerassem
 open tigertree
 open tigerframe
 
-      exception Multiplode4 
+exception Multiplode4 
 
 fun codegen frame stm = 
 let 
 	val ilist = ref (nil: instr list)
+	val Sp = tigerframe.sp
 	fun emit x = ilist := x :: !ilist
 
 	
@@ -143,7 +144,7 @@ let
  
       (*--------str e1 [sp,#offset]-------------El offset tiene que ser mult de 4*)
  
-      | munchStm (MOVE(MEM(BINOP(PLUS, CONST i, TEMP sp)), e1  )) =  (*V*) (* i mult de 4 entre 0 y 1020*)
+      | munchStm (MOVE(MEM(BINOP(PLUS, CONST i, TEMP "sp")), e1  )) =  (*V*) (* i mult de 4 entre 0 y 1020*)
 	     
 	     ((if (i mod 4 = 0) then () else raise Fail "offset del sp tiene que ser multiplo de 4\n") ;  
 	    
@@ -158,7 +159,7 @@ let
 	                dst = [],
 	                jump = NONE })))
 	      )            
-	  | munchStm (MOVE(MEM(BINOP(PLUS, TEMP sp, CONST i)), e1  ))  = munchStm (MOVE(MEM(BINOP(PLUS, CONST i, TEMP sp)), e1  )) 
+	  | munchStm (MOVE(MEM(BINOP(PLUS, TEMP "sp", CONST i)), e1  ))  = munchStm (MOVE(MEM(BINOP(PLUS, CONST i, TEMP tigerframe.sp)), e1  )) 
 	  
 	  (*----------str e1 [e2,#offset]-------------*)
 
