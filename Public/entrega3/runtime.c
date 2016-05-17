@@ -122,6 +122,11 @@ int not(int i)
 { return !i;
 }
 
+void _exit(int i) 
+{
+	exit(i); 
+}
+
 struct string *getstr()
 {int i=getc(stdin);
  if (i==EOF) return &empty;
