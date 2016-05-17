@@ -127,3 +127,7 @@ struct string *getstr()
  if (i==EOF) return &empty;
  else return consts+i;
 }
+
+void _exit(int i) {
+   exit(i) ;	
+}
