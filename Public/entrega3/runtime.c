@@ -20,8 +20,10 @@ void _checkIndexArray(int *a, int i)
 }
 
 void _checkNil(int *a) {
-	if (a == 0) 
+	if (a == 0) {
+		fprintf(stderr, "referencia a un puntero nulo..\n");
 		exit (-1);
+	}
 }
 
 int *_allocRecord(int size, ...)
@@ -81,7 +83,7 @@ int ord(struct string *s)
 struct string *chr(int i)
 {
  if (i<0 || i>=256) 
-   {printf("chr(%d) out of range\n",i); exit(1);}
+   {fprintf(stderr, "chr(%d) out of range\n",i); exit(1);}
  return consts+i;
 }
 
@@ -93,7 +95,7 @@ int size(struct string *s)
 struct string *substring(struct string *s, int first, int n)
 {
  if (first<0 || first+n>s->length)
-   {printf("substring([%d],%d,%d) out of range\n",s->length,first,n);
+   {fprintf(stderr, "substring([%d],%d,%d) out of range\n",s->length,first,n);
     exit(1);}
  if (n==1) return consts+s->chars[first];
  {struct string *t = (struct string *)malloc(sizeof(int)+n);
