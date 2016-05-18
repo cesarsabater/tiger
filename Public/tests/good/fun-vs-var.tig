@@ -9,5 +9,5 @@ let
    var a : a := 2
    function a (a : a) : a = a
 in
-   a (a + a)
+   printInteger(a (a + a))
 end
