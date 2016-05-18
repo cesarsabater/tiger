@@ -225,7 +225,8 @@ fun transExp(venv, tenv) =
 				else error ("El valor asignado no es del tipo asignado", nl)
 			end  (* {exp=(), ty=TUnit} *) (*COMPLETAR*)
 		| trexp(IfExp({test, then', else'=SOME else'}, nl)) =
-			let val {exp=testexp, ty=tytest} = trexp test
+			let 
+				val {exp=testexp, ty=tytest} = trexp test
 			    val {exp=thenexp, ty=tythen} = trexp then'
 			    val {exp=elseexp, ty=tyelse} = trexp else'
 			in
@@ -246,12 +247,13 @@ fun transExp(venv, tenv) =
 				val ttest = trexp test
 				val _ = preWhileForExp()
 				val tbody = trexp body
+				val _ = if isTInt (#ty ttest) andalso #ty tbody = TUnit then ()
+					else if not (isTInt (#ty ttest)) then error("Error de tipo en la condición", nl)
+					else error("El cuerpo de un while no puede devolver un valor", nl)
 				val exp = whileExp {test=(#exp ttest), body=(#exp tbody), lev=topLevel()}
 				val _ = postWhileForExp()
 			in
-				if isTInt (#ty ttest) andalso #ty tbody = TUnit then {exp=exp, ty=TUnit}
-				else if not (isTInt (#ty ttest)) then error("Error de tipo en la condición", nl)
-				else error("El cuerpo de un while no puede devolver un valor", nl)
+				{exp=exp, ty=TUnit}
 			end
 		| trexp(ForExp({var, escape, lo, hi, body}, nl)) =
 			let
@@ -266,13 +268,14 @@ fun transExp(venv, tenv) =
 				
 				val _ = preWhileForExp()
 				val { ty=tbody, exp=bexp } = transExp (venv', tenv) body
+				val _ = if isTInt thi andalso isTInt tlo andalso tbody = TUnit then ()
+					else if not (isTInt tlo) then error("Error de tipo en la cota inferior del bucle", nl) 
+					else if not (isTInt thi) then error("Error de tipo en la cota superior del bucle", nl)
+					else error("El cuerpo de un for no puede devolver un valor", nl)
 				val fexp = forExp {lo=elo, hi=ehi, var=vexp, body=bexp}
 				val _ = postWhileForExp()
 			in 
-				if isTInt thi andalso isTInt tlo andalso tbody = TUnit then { exp=fexp, ty=TUnit } 
-				else if not (isTInt tlo) then error("Error de tipo en la cota inferior del bucle", nl) 
-				else if not (isTInt thi) then error("Error de tipo en la cota superior del bucle", nl)
-				else error("El cuerpo de un for no puede devolver un valor", nl)
+				{ exp=fexp, ty=TUnit } 
 			end   (*  {exp=(), ty=TUnit} *) (*COMPLETAR*)
 		| trexp(LetExp({decs, body}, _)) =
 			let
@@ -545,7 +548,9 @@ let
 	(* generamos codigo intermedio *)
 	val _ = transExp(tab_vars, tab_tipos) main
 in	
-        ( print "bien!\n" ) 
+		( 
+			
+			print "bien!\n" ) 
 end
     
 end
