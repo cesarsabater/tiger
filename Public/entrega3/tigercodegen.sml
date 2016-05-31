@@ -256,7 +256,7 @@ let
 	    else 
 	     result(fn r => emit(OPER
 	            {assem = "ldr     'd0, ['s0]\n",
-	             src = [munchExp (BINOP (MINUS, CONST i, e1))], dst = [r],
+	             src = [munchExp (BINOP (MINUS, e1, CONST i))], dst = [r],
 	             jump = NONE }))    
 	             
 	(*---------------ldr r [e1]-----------------------------*)                
